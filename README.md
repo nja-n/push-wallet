@@ -1,87 +1,84 @@
-🪙 Expense Tracker Pro
-A professional Flutter accounting application designed for high maintainability, scalability, and local-first performance. This project utilizes Clean Architecture, Domain-Driven Design (DDD), and SOLID principles to ensure a robust codebase.
+# 🪙 Expense Tracker Pro
 
-📑 Table of Contents
-Architecture
+A professional, local-first accounting application built with Flutter. Designed for maintainability, scalability, and performance using Clean Architecture and Domain-Driven Design (DDD).
 
-Key Features
+---
 
-Project Structure
+## 🏛 Architecture
 
-Tech Stack
+We follow **Clean Architecture** with a Feature-First organization, ensuring decoupling and testability.
 
-Getting Started
+- **Domain Layer**: Core Business Logic (Entities, UseCases). Zero external dependencies.
+- **Data Layer**: Repositories, Data Sources, APIs, and DB implementation.
+- **Presentation Layer**: UI Widgets, Pages, and State Management (BLoC).
 
-Principles Followed
+## ✨ Key Features
 
-🏛 Architecture
-The project follows Clean Architecture with a Feature-First organization. This separates the core business logic from UI and external framework dependencies, making it easier to swap local storage for a cloud backend later.
+- **Local-First Persistence**: Powered by [Isar](https://isar.dev) for lightning-fast database performance.
+- **Smart Accounting**: Track multiple accounts including **Cash**, **Bank**, and **Credit Cards** (with liability logic).
+- **Transaction Management**: Detailed Income, Expense, and Transfer tracking.
+- **Analytics**: Real-time Dashboard and Monthly Calendar views.
+- **Theming**: Elegant UI with custom Light/Dark mode support (System Default).
 
-Domain Layer: The heart of the app. Contains Entities, Use Cases, and Repository interfaces. It has zero dependencies on other layers.
+## 📁 Project Structure
 
-Data Layer: Handles data persistence and external APIs. Implements the repository interfaces defined in the Domain.
-
-Presentation Layer: Pure UI and State Management (BLoC/Cubit). Widgets here are "dumb" and only reflect the current state.
-
-✨ Key Features
-Local-First Persistence: Lightning-fast accounting records using the Isar database.
-
-Transaction Management: Track income and expenses with detailed categorization.
-
-Account Tracking: Manage multiple accounts (Cash, Bank, Credit Cards) with real-time balance updates.
-
-Reactive UI: Real-time state updates using the BLoC pattern.
-
-📁 Project Structure
-Plaintext
+```
 lib/
-├── core/                # Shared utilities, common errors, and base classes
-├── features/            # Bounded Contexts (DDD)
-│   ├── transactions/    # Income and Expense feature
-│   │   ├── domain/      # Business logic (Entities, UseCases)
-│   │   ├── data/        # Infrastructure (Models, Repositories, DB)
-│   │   └── presentation/# UI (BLoC, Pages, Widgets)
-│   └── accounts/        # Account management feature
-└── main.dart            # App entry point & Dependency Injection setup
-🛠 Tech Stack
-Framework: Flutter
+├── core/                # Shared utilities, extensions, failures
+├── features/            # Feature modules (DDD)
+│   ├── transaction/     # Transaction logic & UI
+│   ├── account/         # Account management
+│   ├── category/        # Category management
+│   ├── home/            # Dashboard & Navigation
+│   └── settings/        # App preferences
+└── main.dart            # Entry point & DI
+```
 
-State Management: flutter_bloc
+## 🛠 Tech Stack
 
-Local Database: Isar
+| Component | Technology |
+|-----------|------------|
+| **Framework** | [Flutter](https://flutter.dev) |
+| **State Management** | [flutter_bloc](https://pub.dev/packages/flutter_bloc) |
+| **Database** | [Isar](https://pub.dev/packages/isar) |
+| **DI** | [GetIt](https://pub.dev/packages/get_it) |
+| **FP** | [fpdart](https://pub.dev/packages/fpdart) & [dartz](https://pub.dev/packages/dartz) |
+| **Code Gen** | [build_runner](https://pub.dev/packages/build_runner), [hive](https://pub.dev/packages/hive) |
 
-Dependency Injection: GetIt
+## 🚀 Getting Started
 
-Data Models: Freezed (Immutability & Union Types)
+### Prerequisites
+- Flutter SDK (3.x+)
+- Dart SDK (3.x+)
 
-Functional Programming: Dartz (Either for Error Handling)
+### Installation
 
-🚀 Getting Started
-Prerequisites
-Flutter SDK (v3.x or higher)
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/expense-tracker.git
+   cd expense-tracker
+   ```
 
-Dart SDK (v3.x or higher)
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
 
-Installation
-Clone the repository:
+3. **Generate Code** (required for Hive/Isar adapters)
+   ```bash
+   flutter pub run build_runner build --delete-conflicting-outputs
+   ```
 
-Bash
-git clone https://github.com/yourusername/expense-tracker.git
-Install dependencies:
+4. **Run**
+   ```bash
+   flutter run
+   ```
 
-Bash
-flutter pub get
-Run code generation (for Freezed/Isar models):
+## 💎 Design Principles
 
-Bash
-dart run build_runner build --delete-conflicting-outputs
-Run the application:
+- **SOLID Principles**: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.
+- **Unidirectional Data Flow**: UI -> Event -> BLoC -> UseCase -> Repository -> Data.
+- **Immutability**: Entities and States are immutable.
 
-Bash
-flutter run
-💎 Principles Followed
-SOLID: Every class has a single responsibility and depends on abstractions rather than concrete implementations.
-
-Unidirectional Data Flow: Data flows from Data Source → Repository → Use Case → BLoC → UI.
-
-Immutability: All domain entities are immutable to prevent unintended state side-effects.
+---
+*Built with ❤️ by Aeither Dev and AI Assistant.*
