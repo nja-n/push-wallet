@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:push_wallet/features/account/presentation/bloc/account_cubit.dart';
 import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart';
 import 'package:push_wallet/features/transaction/domain/entities/transaction_entity.dart';
+import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
+import 'add_transaction_sheet.dart';
 
 class TransactionListView extends StatelessWidget {
   final List<TransactionEntity> transactions;
@@ -114,54 +116,101 @@ class TransactionListView extends StatelessWidget {
 
     final formattedTime = DateFormat.jm().format(t.date);
 
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: t.type == TransactionType.income
-            ? Colors.green.withOpacity(0.2)
-            : t.type == TransactionType.expense
-            ? Colors.red.withOpacity(0.2)
-            : Colors.blue.withOpacity(0.2),
-        child: Icon(
-          t.type == TransactionType.income
-              ? Icons.arrow_downward
+    return Dismissible(
+      key: Key(t.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Confirm"),
+              content: const Text(
+                "Are you sure you want to delete this transaction?",
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text("CANCEL"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text(
+                    "DELETE",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      onDismissed: (direction) {
+        context.read<TransactionCubit>().deleteTransaction(t);
+        context.read<AccountCubit>().loadAccounts();
+      },
+      child: ListTile(
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (ctx) => AddTransactionSheet(transaction: t),
+          );
+        },
+        leading: CircleAvatar(
+          backgroundColor: t.type == TransactionType.income
+              ? Colors.green.withOpacity(0.2)
               : t.type == TransactionType.expense
-              ? Icons.arrow_upward
-              : Icons.compare_arrows,
-          color: t.type == TransactionType.income
-              ? Colors.green
-              : t.type == TransactionType.expense
-              ? Colors.red
-              : Colors.blue,
+              ? Colors.red.withOpacity(0.2)
+              : Colors.blue.withOpacity(0.2),
+          child: Icon(
+            t.type == TransactionType.income
+                ? Icons.arrow_downward
+                : t.type == TransactionType.expense
+                ? Icons.arrow_upward
+                : Icons.compare_arrows,
+            color: t.type == TransactionType.income
+                ? Colors.green
+                : t.type == TransactionType.expense
+                ? Colors.red
+                : Colors.blue,
+          ),
         ),
-      ),
-      title: Text(
-        t.description.isEmpty ? 'No Description' : t.description,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 4),
-          Text(
-            '$categoryName$subCategoryName • $accountName',
-            style: const TextStyle(fontSize: 12),
+        title: Text(
+          t.description.isEmpty ? 'No Description' : t.description,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              '$categoryName$subCategoryName • $accountName',
+              style: const TextStyle(fontSize: 12),
+            ),
+            Text(
+              '$formattedTime • ${t.type.name.toUpperCase()}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        trailing: Text(
+          t.amount.toStringAsFixed(2),
+          style: TextStyle(
+            color: t.type == TransactionType.income
+                ? Colors.green
+                : t.type == TransactionType.expense
+                ? Colors.red
+                : Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
           ),
-          Text(
-            '$formattedTime • ${t.type.name.toUpperCase()}',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
-      ),
-      trailing: Text(
-        t.amount.toStringAsFixed(2),
-        style: TextStyle(
-          color: t.type == TransactionType.income
-              ? Colors.green
-              : t.type == TransactionType.expense
-              ? Colors.red
-              : Colors.black,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
         ),
       ),
     );

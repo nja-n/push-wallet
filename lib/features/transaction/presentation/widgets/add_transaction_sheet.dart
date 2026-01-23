@@ -9,7 +9,9 @@ import 'package:push_wallet/features/transaction/domain/entities/transaction_ent
 import 'package:uuid/uuid.dart';
 
 class AddTransactionSheet extends StatefulWidget {
-  const AddTransactionSheet({super.key});
+  final TransactionEntity? transaction;
+
+  const AddTransactionSheet({super.key, this.transaction});
 
   @override
   State<AddTransactionSheet> createState() => _AddTransactionSheetState();
@@ -25,6 +27,23 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   String? _subCategoryId;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.transaction != null) {
+      final t = widget.transaction!;
+      _descController.text = t.description;
+      _amountController.text = t.amount.toString();
+      _type = t.type;
+      _accountId = t.accountId;
+      _toAccountId = t.toAccountId;
+      _categoryId = t.categoryId;
+      _subCategoryId = t.subCategoryId;
+      _selectedDate = t.date;
+      _selectedTime = TimeOfDay.fromDateTime(t.date);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +62,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Add Transaction',
+                widget.transaction == null
+                    ? 'Add Transaction'
+                    : 'Edit Transaction',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               IconButton(
@@ -77,8 +98,13 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             onSelectionChanged: (Set<TransactionType> newSelection) {
               setState(() {
                 _type = newSelection.first;
-                _categoryId = null; // Reset category on type change
-                _subCategoryId = null; // Reset subcategory
+                // Only reset category if switching type generally, but for edit we might want to keep?
+                // If editing, user might change type intentionally.
+                // Resetting is safer to avoid invalid states.
+                if (widget.transaction?.type != _type) {
+                  _categoryId = null;
+                  _subCategoryId = null;
+                }
               });
             },
           ),
@@ -254,7 +280,11 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _saveTransaction,
-            child: const Text('Save Transaction'),
+            child: Text(
+              widget.transaction == null
+                  ? 'Save Transaction'
+                  : 'Update Transaction',
+            ),
           ),
           const SizedBox(height: 24),
         ],
@@ -298,7 +328,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
     );
 
     final transaction = TransactionEntity(
-      id: const Uuid().v4(),
+      id: widget.transaction?.id ?? const Uuid().v4(),
       amount: amount,
       date: dateTime,
       description: _descController.text,
@@ -309,7 +339,12 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       subCategoryId: _subCategoryId,
     );
 
-    await context.read<TransactionCubit>().addTransaction(transaction);
+    if (widget.transaction != null) {
+      await context.read<TransactionCubit>().updateTransaction(transaction);
+    } else {
+      await context.read<TransactionCubit>().addTransaction(transaction);
+    }
+
     if (!mounted) return;
     context.read<AccountCubit>().loadAccounts(); // Refresh accounts
     Navigator.pop(context);

@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:push_wallet/features/account/presentation/bloc/account_cubit.dart';
 import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart';
+import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
+import 'add_transaction_sheet.dart';
 
 class TransactionCalendarView extends StatefulWidget {
   final List<TransactionEntity> transactions;
@@ -177,49 +179,109 @@ class _TransactionCalendarViewState extends State<TransactionCalendarView> {
 
     final formattedTime = DateFormat.jm().format(t.date);
 
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: t.type == TransactionType.income
-            ? Colors.green.withOpacity(0.2)
-            : t.type == TransactionType.expense
-            ? Colors.red.withOpacity(0.2)
-            : Colors.blue.withOpacity(0.2),
-        child: Icon(
-          t.type == TransactionType.income
-              ? Icons.arrow_downward
+    return Dismissible(
+      key: Key(t.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Confirm"),
+              content: const Text(
+                "Are you sure you want to delete this transaction?",
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text("CANCEL"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text(
+                    "DELETE",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      onDismissed: (direction) {
+        context.read<TransactionCubit>().deleteTransaction(t);
+        context.read<AccountCubit>().loadAccounts();
+        // Since this is inside a dialog, the dialog (list) won't automatically refresh unless we pop or setState.
+        // But TransactionCubit handles state.
+        // Ideally we should close the dialog or refresh the list.
+        // Since transactions are passed from parent widget, parent needs rebuild.
+        // TransactionCubit.deleteTransaction triggers TransactionLoaded.
+        // Parent BlockBuilder should rebuild.
+        // But the dialog content is built from `dayTransactions` filtered in `_showTransactionsForDay`.
+        // We probably should close the dialog or use a BlocBuilder inside the dialog.
+        // Simplest: Close dialog.
+        Navigator.of(context).pop();
+      },
+      child: ListTile(
+        onTap: () {
+          // Close dialog before opening sheet to avoid context issues or stacking.
+          // Or open sheet on top.
+          Navigator.of(context).pop();
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (ctx) => AddTransactionSheet(transaction: t),
+          );
+        },
+        leading: CircleAvatar(
+          backgroundColor: t.type == TransactionType.income
+              ? Colors.green.withOpacity(0.2)
               : t.type == TransactionType.expense
-              ? Icons.arrow_upward
-              : Icons.compare_arrows,
-          color: t.type == TransactionType.income
-              ? Colors.green
-              : t.type == TransactionType.expense
-              ? Colors.red
-              : Colors.blue,
+              ? Colors.red.withOpacity(0.2)
+              : Colors.blue.withOpacity(0.2),
+          child: Icon(
+            t.type == TransactionType.income
+                ? Icons.arrow_downward
+                : t.type == TransactionType.expense
+                ? Icons.arrow_upward
+                : Icons.compare_arrows,
+            color: t.type == TransactionType.income
+                ? Colors.green
+                : t.type == TransactionType.expense
+                ? Colors.red
+                : Colors.blue,
+          ),
         ),
-      ),
-      title: Text(t.description.isEmpty ? 'No Desc' : t.description),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$categoryName$subCategoryName • $accountName',
-            style: const TextStyle(fontSize: 12),
+        title: Text(t.description.isEmpty ? 'No Desc' : t.description),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$categoryName$subCategoryName • $accountName',
+              style: const TextStyle(fontSize: 12),
+            ),
+            Text(
+              '$formattedTime • ${t.type.name}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        trailing: Text(
+          t.amount.toStringAsFixed(2),
+          style: TextStyle(
+            color: t.type == TransactionType.income
+                ? Colors.green
+                : t.type == TransactionType.expense
+                ? Colors.red
+                : Colors.black,
+            fontWeight: FontWeight.bold,
           ),
-          Text(
-            '$formattedTime • ${t.type.name}',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
-      ),
-      trailing: Text(
-        t.amount.toStringAsFixed(2),
-        style: TextStyle(
-          color: t.type == TransactionType.income
-              ? Colors.green
-              : t.type == TransactionType.expense
-              ? Colors.red
-              : Colors.black,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

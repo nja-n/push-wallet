@@ -29,4 +29,23 @@ class Account extends Equatable {
     icon,
     creditLimit,
   ];
+  Account copyWith({
+    String? id,
+    String? name,
+    String? type,
+    double? balance,
+    int? color,
+    String? icon,
+    double? creditLimit,
+  }) {
+    return Account(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      balance: balance ?? this.balance,
+      color: color ?? this.color,
+      icon: icon ?? this.icon,
+      creditLimit: creditLimit ?? this.creditLimit,
+    );
+  }
 }

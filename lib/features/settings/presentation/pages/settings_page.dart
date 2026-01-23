@@ -50,9 +50,120 @@ class SettingsPage extends StatelessWidget {
               onTap: () => _showCurrencyPicker(context, currencies),
             ),
           ),
+          const SizedBox(height: 16),
+          Text(
+            'Data Management',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          BlocBuilder<SettingsCubit, SettingsState>(
+            builder: (context, state) {
+              final loaded = state as SettingsLoaded;
+              return Card(
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: const Text('Auto Backup'),
+                      subtitle: const Text(
+                        'Backup data on changes (Simulated)',
+                      ),
+                      value: loaded.autoBackup,
+                      onChanged: (val) {
+                        context.read<SettingsCubit>().toggleAutoBackup(val);
+                      },
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.backup,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.upload_file,
+                          color: Colors.green,
+                        ),
+                      ),
+                      title: const Text('Backup Data'),
+                      subtitle: Text(
+                        loaded.lastBackup != null
+                            ? 'Last: ${_formatDate(loaded.lastBackup!)}'
+                            : 'No backup yet',
+                      ),
+                      onTap: () async {
+                        await context.read<SettingsCubit>().createBackup(
+                          context,
+                        );
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.download, color: Colors.orange),
+                      ),
+                      title: const Text('Restore Data'),
+                      subtitle: const Text('Import from backup file'),
+                      onTap: () async {
+                        final success = await context
+                            .read<SettingsCubit>()
+                            .restoreBackup();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                success
+                                    ? 'Data restored successfully!'
+                                    : 'Restore cancelled or failed.',
+                              ),
+                            ),
+                          );
+                          if (success) {
+                            // Ideally trigger a full app reload or re-fetch blocs
+                            // For now, simple re-fetch of accounts/transactions if possible
+                            // But since Blocs might hold old state, a full reload is safer
+                            // Or we can emit events to reload data.
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
+  }
+
+  String _formatDate(String isoString) {
+    try {
+      final date = DateTime.parse(isoString);
+      return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return 'Invalid Date';
+    }
   }
 
   void _showCurrencyPicker(

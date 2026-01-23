@@ -8,6 +8,7 @@ import 'package:push_wallet/features/account/domain/usecases/account_usecases.da
 import 'features/category/data/category_data.dart';
 import 'features/category/domain/usecases/category_usecases.dart';
 import 'features/settings/presentation/bloc/settings_cubit.dart';
+import 'core/services/backup_service.dart';
 
 import 'features/account/presentation/bloc/account_cubit.dart';
 import 'features/category/presentation/bloc/category_cubit.dart';
@@ -15,6 +16,9 @@ import 'features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'features/transaction/data/transaction_data.dart';
 import 'features/transaction/domain/repositories/transaction_repository.dart';
 import 'features/transaction/domain/usecases/add_transaction.dart';
+import 'features/transaction/domain/usecases/delete_transaction.dart';
+import 'features/transaction/domain/usecases/update_transaction.dart';
+
 // Blocs will be added later
 
 final sl = GetIt.instance;
@@ -72,16 +76,32 @@ Future<void> init() async {
 
   // Features - Transaction
   sl.registerFactory(
-    () => TransactionCubit(repository: sl(), addTransactionUseCase: sl()),
+    () => TransactionCubit(
+      repository: sl(),
+      addTransactionUseCase: sl(),
+      deleteTransactionUseCase: sl(),
+      updateTransactionUseCase: sl(),
+    ),
   );
 
   sl.registerLazySingleton(() => AddTransaction(sl(), sl()));
+  sl.registerLazySingleton(() => DeleteTransaction(sl(), sl()));
+  sl.registerLazySingleton(() => UpdateTransaction(sl(), sl()));
 
   // Features - Settings
   final settingsBox = await Hive.openBox('settings');
-  sl.registerFactory(() => SettingsCubit(settingsBox));
+  sl.registerLazySingleton<BackupService>(
+    () => BackupService(
+      accountBox: sl(),
+      categoryBox: sl(),
+      transactionBox: sl(),
+      settingsBox: settingsBox,
+    ),
+  );
 
-  // sl.registerLazySingleton(() => GetTransactions(sl())); // Need to create this usecase or use repo directly in bloc? Standard is usecase. I'll add GetTransactions simple usecase later or now.
+  sl.registerFactory(
+    () => SettingsCubit(settingsBox: settingsBox, backupService: sl()),
+  );
 
   sl.registerLazySingleton<TransactionRepository>(
     () => TransactionRepositoryImpl(sl()),

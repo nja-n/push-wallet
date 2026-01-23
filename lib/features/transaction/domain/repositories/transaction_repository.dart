@@ -5,4 +5,8 @@ import '../entities/transaction_entity.dart';
 abstract class TransactionRepository {
   Future<Either<Failure, List<TransactionEntity>>> getTransactions();
   Future<Either<Failure, void>> addTransaction(TransactionEntity transaction);
+  Future<Either<Failure, void>> deleteTransaction(String id);
+  Future<Either<Failure, void>> updateTransaction(
+    TransactionEntity transaction,
+  );
 }

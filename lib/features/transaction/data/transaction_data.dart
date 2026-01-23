@@ -71,6 +71,8 @@ class TransactionModel extends HiveObject {
 abstract class TransactionLocalDataSource {
   Future<List<TransactionModel>> getTransactions();
   Future<void> addTransaction(TransactionModel transaction);
+  Future<void> deleteTransaction(String id);
+  Future<void> updateTransaction(TransactionModel transaction);
 }
 
 class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
@@ -87,6 +89,16 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
 
   @override
   Future<void> addTransaction(TransactionModel transaction) async {
+    await box.put(transaction.id, transaction);
+  }
+
+  @override
+  Future<void> deleteTransaction(String id) async {
+    await box.delete(id);
+  }
+
+  @override
+  Future<void> updateTransaction(TransactionModel transaction) async {
     await box.put(transaction.id, transaction);
   }
 }
@@ -111,6 +123,30 @@ class TransactionRepositoryImpl implements TransactionRepository {
   ) async {
     try {
       await dataSource.addTransaction(TransactionModel.fromEntity(transaction));
+      return const Right(null);
+    } catch (e) {
+      return Left(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteTransaction(String id) async {
+    try {
+      await dataSource.deleteTransaction(id);
+      return const Right(null);
+    } catch (e) {
+      return Left(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateTransaction(
+    TransactionEntity transaction,
+  ) async {
+    try {
+      await dataSource.updateTransaction(
+        TransactionModel.fromEntity(transaction),
+      );
       return const Right(null);
     } catch (e) {
       return Left(CacheFailure());

@@ -10,15 +10,22 @@ import '../../domain/usecases/add_transaction.dart';
 // Actually, `AddTransaction` IS a UseCase.
 // I will just use `TransactionRepository` for `getTransactions` inside Cubit.
 
+import '../../domain/usecases/delete_transaction.dart';
+import '../../domain/usecases/update_transaction.dart';
+
 part 'transaction_state.dart';
 
 class TransactionCubit extends Cubit<TransactionState> {
   final TransactionRepository repository;
   final AddTransaction addTransactionUseCase;
+  final DeleteTransaction deleteTransactionUseCase;
+  final UpdateTransaction updateTransactionUseCase;
 
   TransactionCubit({
     required this.repository,
     required this.addTransactionUseCase,
+    required this.deleteTransactionUseCase,
+    required this.updateTransactionUseCase,
   }) : super(TransactionInitial());
 
   Future<void> loadTransactions() async {
@@ -35,6 +42,24 @@ class TransactionCubit extends Cubit<TransactionState> {
     final result = await addTransactionUseCase(transaction);
     result.fold(
       (failure) => emit(const TransactionError('Failed to add transaction')),
+      (_) => loadTransactions(),
+    );
+  }
+
+  Future<void> deleteTransaction(TransactionEntity transaction) async {
+    emit(TransactionLoading());
+    final result = await deleteTransactionUseCase(transaction);
+    result.fold(
+      (failure) => emit(const TransactionError('Failed to delete transaction')),
+      (_) => loadTransactions(),
+    );
+  }
+
+  Future<void> updateTransaction(TransactionEntity transaction) async {
+    emit(TransactionLoading());
+    final result = await updateTransactionUseCase(transaction);
+    result.fold(
+      (failure) => emit(const TransactionError('Failed to update transaction')),
       (_) => loadTransactions(),
     );
   }
