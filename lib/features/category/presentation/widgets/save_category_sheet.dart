@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:push_wallet/features/category/domain/entities/category.dart';
+import 'package:push_wallet/features/category/domain/entities/category_entity.dart';
 import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:push_wallet/features/category/domain/entities/sub_category.dart';
+import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
 
 class SaveCategorySheet extends StatefulWidget {
-  final Category? category;
+  final CategoryEntity? category;
   const SaveCategorySheet({super.key, this.category});
 
   @override
@@ -17,7 +18,7 @@ class SaveCategorySheet extends StatefulWidget {
 class _SaveCategorySheetState extends State<SaveCategorySheet> {
   final _nameController = TextEditingController();
   final _subCategoryController = TextEditingController();
-  List<SubCategory> _subCategories = [];
+  List<SubCategoryEntity> _subCategories = [];
   bool _isIncome = false;
   int _selectedColor = 0xFF4CAF50;
   String _selectedIcon = '📁';
@@ -88,9 +89,30 @@ class _SaveCategorySheetState extends State<SaveCategorySheet> {
                   isEdit ? 'Edit Category' : 'New Category',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isEdit)
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TransactionsView(
+                                initialCategoryId: widget.category!.id,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.filter_list),
+                        tooltip: 'Filter Transactions',
+                      ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -203,7 +225,7 @@ class _SaveCategorySheetState extends State<SaveCategorySheet> {
                     if (_subCategoryController.text.isNotEmpty) {
                       setState(() {
                         _subCategories.add(
-                          SubCategory(
+                          SubCategoryEntity(
                             id: const Uuid().v4(),
                             name: _subCategoryController.text,
                           ),
@@ -277,7 +299,7 @@ class _SaveCategorySheetState extends State<SaveCategorySheet> {
                 }
 
                 if (isEdit) {
-                  final updated = Category(
+                  final updated = CategoryEntity(
                     id: widget.category!.id,
                     name: name,
                     isIncome: _isIncome,
@@ -288,7 +310,7 @@ class _SaveCategorySheetState extends State<SaveCategorySheet> {
                   );
                   cubit.editCategory(updated);
                 } else {
-                  final newCategory = Category(
+                  final newCategory = CategoryEntity(
                     id: const Uuid().v4(),
                     name: name,
                     isIncome: _isIncome,

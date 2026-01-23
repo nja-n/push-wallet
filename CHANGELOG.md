@@ -3,6 +3,11 @@
 ## [1.0.0] - 2026-01-23
 
 ### Added
+- **Transaction Filtering**: Added advanced filtering options.
+    - Filter transactions by **Account** and **Category**.
+    - Supports multiple selections (e.g., view "Cash" and "Bank" accounts together).
+    - Filters apply to both List View and Calendar View.
+- **UI Improvements**: Enhanced visibility of daily summaries in Calendar/Month View.
 - **Data Management**: Added Backup and Restore functionality.
     - Export all app data (Accounts, Transactions, Categories, Settings) to a secure JSON file.
     - Restore data from a backup file (overwrites current data).

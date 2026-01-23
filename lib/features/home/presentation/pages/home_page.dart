@@ -4,6 +4,7 @@ import 'package:push_wallet/features/category/presentation/pages/categories_view
 import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
 import 'package:push_wallet/features/transaction/presentation/widgets/add_transaction_sheet.dart';
 import 'dashboard_view.dart'; // Same folder
+import 'package:home_widget/home_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,6 +22,40 @@ class _HomePageState extends State<HomePage> {
     const TransactionsView(),
     const CategoriesView(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForWidgetLaunch();
+  }
+
+  void _checkForWidgetLaunch() {
+    HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
+      if (uri != null && uri.toString() == 'pushwallet://quick_add') {
+        _showAddTransaction();
+      }
+    });
+
+    // Also listen for widget clicks while app is in background
+    HomeWidget.widgetClicked.listen((uri) {
+      if (uri != null && uri.toString() == 'pushwallet://quick_add') {
+        _showAddTransaction();
+      }
+    });
+  }
+
+  void _showAddTransaction() {
+    // Delay slightly to ensure UI is ready
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (ctx) => const AddTransactionSheet(),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

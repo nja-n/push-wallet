@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:push_wallet/features/account/domain/entities/account.dart';
 import 'package:push_wallet/features/account/presentation/bloc/account_cubit.dart';
 import 'package:uuid/uuid.dart';
+import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
 
 class SaveAccountSheet extends StatefulWidget {
   final Account? account; // If null, create mode.
@@ -85,9 +86,30 @@ class _SaveAccountSheetState extends State<SaveAccountSheet> {
                   isEdit ? 'Edit Account' : 'New Account',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isEdit)
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TransactionsView(
+                                initialAccountId: widget.account!.id,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.filter_list),
+                        tooltip: 'Filter Transactions',
+                      ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
               ],
             ),

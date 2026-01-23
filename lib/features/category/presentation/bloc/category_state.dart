@@ -11,7 +11,7 @@ class CategoryInitial extends CategoryState {}
 class CategoryLoading extends CategoryState {}
 
 class CategoryLoaded extends CategoryState {
-  final List<Category> categories;
+  final List<CategoryEntity> categories;
   const CategoryLoaded(this.categories);
   @override
   List<Object> get props => [categories];

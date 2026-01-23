@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/settings_cubit.dart';
+import '../../../security/presentation/pages/security_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -27,6 +28,30 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
+
+          const SizedBox(height: 10),
+          Card(
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.security, color: Colors.red),
+              ),
+              title: const Text('Security'),
+              subtitle: const Text('App Lock & PIN'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SecuritySettingsPage(),
+                  ),
+                );
+              },
+            ),
+          ),
           Card(
             child: ListTile(
               leading: Container(
@@ -43,8 +68,11 @@ class SettingsPage extends StatelessWidget {
               title: const Text('Currency'),
               subtitle: BlocBuilder<SettingsCubit, SettingsState>(
                 builder: (context, state) {
-                  final symbol = (state as SettingsLoaded).currencySymbol;
-                  return Text(currencies[symbol] ?? symbol);
+                  if (state is SettingsLoaded) {
+                    final symbol = state.currencySymbol;
+                    return Text(currencies[symbol] ?? symbol);
+                  }
+                  return const Text('');
                 },
               ),
               onTap: () => _showCurrencyPicker(context, currencies),

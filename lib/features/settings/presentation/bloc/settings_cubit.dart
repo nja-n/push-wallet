@@ -14,6 +14,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   static const String currencyKey = 'currency_symbol';
   static const String autoBackupKey = 'auto_backup';
   static const String lastBackupKey = 'last_backup';
+  static const String securityEnabledKey = 'security_enabled';
+  static const String securityPinKey = 'security_pin';
 
   SettingsCubit({required this.settingsBox, required this.backupService})
     : super(SettingsInitial()) {
@@ -24,12 +26,17 @@ class SettingsCubit extends Cubit<SettingsState> {
     final currency = settingsBox.get(currencyKey, defaultValue: '\$');
     final autoBackup = settingsBox.get(autoBackupKey, defaultValue: false);
     final lastBackup = settingsBox.get(lastBackupKey);
+    final isSecurityEnabled = settingsBox.get(
+      securityEnabledKey,
+      defaultValue: false,
+    );
 
     emit(
       SettingsLoaded(
         currencySymbol: currency,
         autoBackup: autoBackup,
         lastBackup: lastBackup,
+        isSecurityEnabled: isSecurityEnabled,
       ),
     );
   }
@@ -64,5 +71,21 @@ class SettingsCubit extends Cubit<SettingsState> {
       loadSettings();
     }
     return success;
+  }
+
+  Future<void> toggleSecurity(bool enabled) async {
+    await settingsBox.put(securityEnabledKey, enabled);
+    if (state is SettingsLoaded) {
+      emit((state as SettingsLoaded).copyWith(isSecurityEnabled: enabled));
+    }
+  }
+
+  Future<void> setSecurityPin(String pin) async {
+    await settingsBox.put(securityPinKey, pin);
+  }
+
+  bool verifyPin(String pin) {
+    final storedPin = settingsBox.get(securityPinKey);
+    return storedPin == pin;
   }
 }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart'; // absolute
-
-import 'package:push_wallet/features/category/domain/entities/category.dart';
+import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart';
+import 'package:push_wallet/features/category/domain/entities/category_entity.dart';
 import 'package:push_wallet/features/category/presentation/widgets/save_category_sheet.dart';
 
 class CategoriesView extends StatelessWidget {
@@ -52,7 +51,10 @@ class CategoriesView extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryList(BuildContext context, List<Category> categories) {
+  Widget _buildCategoryList(
+    BuildContext context,
+    List<CategoryEntity> categories,
+  ) {
     if (categories.isEmpty) {
       return const Center(child: Text('No categories found.'));
     }
@@ -66,9 +68,7 @@ class CategoriesView extends StatelessWidget {
             child: Text(cat.icon, style: const TextStyle(fontSize: 24)),
           ),
           title: Text(cat.name),
-          subtitle: Text(
-            '${cat.subCategories.length} subcategories',
-          ), // Optional: show sub count
+          subtitle: Text('${cat.subCategories.length} subcategories'),
           trailing: IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () =>
@@ -80,7 +80,10 @@ class CategoriesView extends StatelessWidget {
     );
   }
 
-  void _showAddCategoryDialog(BuildContext context, {Category? category}) {
+  void _showAddCategoryDialog(
+    BuildContext context, {
+    CategoryEntity? category,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

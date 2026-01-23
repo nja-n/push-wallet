@@ -1,16 +1,16 @@
 import 'package:equatable/equatable.dart';
 import 'sub_category.dart';
 
-class Category extends Equatable {
+class CategoryEntity extends Equatable {
   final String id;
   final String name;
   final bool isIncome;
   final String icon; // Emoji character
   final int color;
-  final List<SubCategory> subCategories;
+  final List<SubCategoryEntity> subCategories;
   final bool isDeleted;
 
-  const Category({
+  const CategoryEntity({
     required this.id,
     required this.name,
     required this.isIncome,

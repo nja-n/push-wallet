@@ -1,9 +1,9 @@
 import 'package:hive/hive.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
-import '../domain/entities/category.dart';
+import '../domain/entities/category_entity.dart';
 import '../domain/entities/sub_category.dart';
-import '../domain/usecases/category_usecases.dart'; // interface defined there or separate file, logic is here for data
+import '../domain/usecases/category_usecases.dart';
 
 part 'category_data.g.dart';
 
@@ -34,7 +34,7 @@ class CategoryModel extends HiveObject {
     this.isDeleted = false,
   });
 
-  factory CategoryModel.fromEntity(Category category) {
+  factory CategoryModel.fromEntity(CategoryEntity category) {
     return CategoryModel(
       id: category.id,
       name: category.name,
@@ -48,8 +48,8 @@ class CategoryModel extends HiveObject {
     );
   }
 
-  Category toEntity() {
-    return Category(
+  CategoryEntity toEntity() {
+    return CategoryEntity(
       id: id,
       name: name,
       isIncome: isIncome,
@@ -70,11 +70,11 @@ class SubCategoryModel extends HiveObject {
 
   SubCategoryModel({required this.id, required this.name});
 
-  factory SubCategoryModel.fromEntity(SubCategory entity) {
+  factory SubCategoryModel.fromEntity(SubCategoryEntity entity) {
     return SubCategoryModel(id: entity.id, name: entity.name);
   }
 
-  SubCategory toEntity() => SubCategory(id: id, name: name);
+  SubCategoryEntity toEntity() => SubCategoryEntity(id: id, name: name);
 }
 
 abstract class CategoryLocalDataSource {
@@ -109,7 +109,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   CategoryRepositoryImpl(this.localDataSource);
 
   @override
-  Future<Either<Failure, List<Category>>> getCategories() async {
+  Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
     try {
       final models = await localDataSource.getCategories();
       return Right(models.map((e) => e.toEntity()).toList());
@@ -119,7 +119,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
-  Future<Either<Failure, void>> addCategory(Category category) async {
+  Future<Either<Failure, void>> addCategory(CategoryEntity category) async {
     try {
       await localDataSource.cacheCategory(CategoryModel.fromEntity(category));
       return const Right(null);
@@ -129,7 +129,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateCategory(Category category) async {
+  Future<Either<Failure, void>> updateCategory(CategoryEntity category) async {
     try {
       await localDataSource.updateCategory(CategoryModel.fromEntity(category));
       return const Right(null);

@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/category.dart';
+import '../../domain/entities/category_entity.dart';
 import '../../domain/usecases/category_usecases.dart';
 import '../../../../core/usecases/usecase.dart';
 
@@ -29,7 +29,7 @@ class CategoryCubit extends Cubit<CategoryState> {
     );
   }
 
-  Future<void> createCategory(Category category) async {
+  Future<void> createCategory(CategoryEntity category) async {
     emit(CategoryLoading());
     final result = await addCategory(category);
     result.fold(
@@ -38,7 +38,7 @@ class CategoryCubit extends Cubit<CategoryState> {
     );
   }
 
-  Future<void> editCategory(Category category) async {
+  Future<void> editCategory(CategoryEntity category) async {
     emit(CategoryLoading());
     final result = await updateCategory(category);
     result.fold(
@@ -56,7 +56,7 @@ class CategoryCubit extends Cubit<CategoryState> {
         );
         emit(CategoryLoading());
 
-        final softDeletedCategory = Category(
+        final softDeletedCategory = CategoryEntity(
           id: categoryToDelete.id,
           name: categoryToDelete.name,
           isIncome: categoryToDelete.isIncome,

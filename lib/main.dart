@@ -10,6 +10,7 @@ import 'package:push_wallet/features/category/presentation/bloc/category_cubit.d
 import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:push_wallet/features/home/presentation/pages/home_page.dart';
+import 'package:push_wallet/features/security/presentation/pages/app_lock_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +51,13 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: _buildLightTheme(), // Custom Light Theme
             themeMode: ThemeMode.light, // Enforce Light Mode
-            home: const HomePage(),
+            home: state is SettingsLoaded
+                ? (state.isSecurityEnabled
+                      ? const AppLockScreen()
+                      : const HomePage())
+                : const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  ),
           );
         },
       ),

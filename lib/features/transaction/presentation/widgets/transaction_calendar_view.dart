@@ -78,22 +78,44 @@ class _TransactionCalendarViewState extends State<TransactionCalendarView> {
 
     return Positioned(
       bottom: 1,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (income > 0)
-            Text(
-              '+${NumberFormat.compact().format(income)}',
-              style: const TextStyle(color: Colors.green, fontSize: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 1,
+              offset: const Offset(0, 1),
             ),
-          if (expense > 0)
-            Text(
-              '-${NumberFormat.compact().format(expense)}',
-              style: const TextStyle(color: Colors.red, fontSize: 10),
-            ),
-          if (hasTransfer)
-            const Icon(Icons.swap_horiz, size: 10, color: Colors.blue),
-        ],
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (income > 0)
+              Text(
+                '+${NumberFormat.compact().format(income)}',
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (expense > 0)
+              Text(
+                '-${NumberFormat.compact().format(expense)}',
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (hasTransfer)
+              const Icon(Icons.swap_horiz, size: 10, color: Colors.blue),
+          ],
+        ),
       ),
     );
   }
