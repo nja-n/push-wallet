@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:push_wallet/core/services/widget_service.dart';
 import 'injection_container.dart' as di;
 import 'features/account/data/models/account_model.dart';
@@ -20,7 +21,10 @@ void main() async {
   await Hive.initFlutter();
 
   // Initialize Widget Interactivity
-  HomeWidget.registerInteractivityCallback(interactiveCallback);
+  // home_widget is not supported on Web and will throw UnimplementedError
+  if (!kIsWeb) {
+    HomeWidget.registerInteractivityCallback(interactiveCallback);
+  }
 
   Hive.registerAdapter(AccountModelAdapter());
   Hive.registerAdapter(CategoryModelAdapter());
