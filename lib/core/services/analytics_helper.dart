@@ -25,25 +25,65 @@ class AnalyticsHelper {
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
-  Map<String, double> get categoryExpenses {
-    final map = <String, double>{};
+  Map<CategoryEntity, double> get categoryExpenses {
+    final map = <CategoryEntity, double>{};
     for (var t in transactions) {
       if (t.type == TransactionType.expense && t.categoryId != null) {
-        // Find category name
-        final catName = categories
-            .firstWhere(
-              (c) => c.id == t.categoryId,
-              orElse: () => CategoryEntity(
-                id: 'unknown',
-                name: 'Unknown',
-                icon: '',
-                color: 0,
-                isIncome: false,
-                subCategories: [],
-              ),
-            )
-            .name;
-        map[catName] = (map[catName] ?? 0) + t.amount;
+        // Find category
+        final category = categories.firstWhere(
+          (c) => c.id == t.categoryId,
+          orElse: () => CategoryEntity(
+            id: 'unknown',
+            name: 'Unknown',
+            icon: '',
+            color: 0,
+            isIncome: false,
+            subCategories: [],
+          ),
+        );
+        map[category] = (map[category] ?? 0) + t.amount;
+      }
+    }
+    return map;
+  }
+
+  Map<Account, double> get accountIncome {
+    final map = <Account, double>{};
+    for (var t in transactions) {
+      if (t.type == TransactionType.income) {
+        final account = accounts.firstWhere(
+          (a) => a.id == t.accountId,
+          orElse: () => Account(
+            id: 'unknown',
+            name: 'Unknown',
+            type: '',
+            color: 0,
+            icon: '',
+            balance: 0,
+          ),
+        );
+        map[account] = (map[account] ?? 0) + t.amount;
+      }
+    }
+    return map;
+  }
+
+  Map<Account, double> get accountExpenses {
+    final map = <Account, double>{};
+    for (var t in transactions) {
+      if (t.type == TransactionType.expense) {
+        final account = accounts.firstWhere(
+          (a) => a.id == t.accountId,
+          orElse: () => Account(
+            id: 'unknown',
+            name: 'Unknown',
+            type: '',
+            color: 0,
+            icon: '',
+            balance: 0,
+          ),
+        );
+        map[account] = (map[account] ?? 0) + t.amount;
       }
     }
     return map;

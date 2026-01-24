@@ -4,9 +4,8 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.widget.RemoteViews
-import android.app.PendingIntent
-import android.content.Intent
-import android.net.Uri
+import es.antonborri.home_widget.HomeWidgetBackgroundIntent
+import es.antonborri.home_widget.HomeWidgetProvider
 
 class QuickAddWidget : AppWidgetProvider() {
     override fun onUpdate(
@@ -25,29 +24,33 @@ internal fun updateAppWidget(
     appWidgetManager: AppWidgetManager,
     appWidgetId: Int
 ) {
-    val widgetText = "Quick Add"
-    // Construct the RemoteViews object
+    // 1. Retrieve Current Amount from SharedPrefs (synced via HomeWidget)
+    val widgetData = HomeWidgetProvider.getData(context)
+    val currentAmount = widgetData.getString("widget_amount", "0")
+
     val views = RemoteViews(context.packageName, R.layout.widget_layout)
     
-    // Create Intent to launch App with specific URI
-    // We use a custom scheme/host or just plain data to identify this launch
-    val intent = Intent(context, MainActivity::class.java).apply {
-        action = Intent.ACTION_VIEW
-        data = Uri.parse("pushwallet://quick_add")
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-    }
+    // 2. Update Display
+    views.setTextViewText(R.id.amount_display, currentAmount)
+
+    // 3. Attach Click Listeners
     
-    val pendingIntent = PendingIntent.getActivity(
-        context, 
-        0, 
-        intent, 
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    )
+    // Numbers 0-9
+    views.setOnClickPendingIntent(R.id.btn_0, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/0")))
+    views.setOnClickPendingIntent(R.id.btn_1, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/1")))
+    views.setOnClickPendingIntent(R.id.btn_2, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/2")))
+    views.setOnClickPendingIntent(R.id.btn_3, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/3")))
+    views.setOnClickPendingIntent(R.id.btn_4, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/4")))
+    views.setOnClickPendingIntent(R.id.btn_5, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/5")))
+    views.setOnClickPendingIntent(R.id.btn_6, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/6")))
+    views.setOnClickPendingIntent(R.id.btn_7, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/7")))
+    views.setOnClickPendingIntent(R.id.btn_8, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/8")))
+    views.setOnClickPendingIntent(R.id.btn_9, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/9")))
+    views.setOnClickPendingIntent(R.id.btn_dot, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://num/.")))
 
-    // Attach click listener to the root layout and input container
-    views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-    views.setOnClickPendingIntent(R.id.input_container, pendingIntent)
+    // Actions
+    views.setOnClickPendingIntent(R.id.btn_clear, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://clear")))
+    views.setOnClickPendingIntent(R.id.btn_save, HomeWidgetBackgroundIntent.getBroadcast(context, android.net.Uri.parse("quickadd://save")))
 
-    // Instruct the widget manager to update the widget
     appWidgetManager.updateAppWidget(appWidgetId, views)
 }

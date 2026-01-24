@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:home_widget/home_widget.dart';
+import 'package:push_wallet/core/services/widget_service.dart';
 import 'injection_container.dart' as di;
 import 'features/account/data/models/account_model.dart';
 import 'features/category/data/category_data.dart';
@@ -16,6 +18,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
+
+  // Initialize Widget Interactivity
+  HomeWidget.registerInteractivityCallback(interactiveCallback);
 
   Hive.registerAdapter(AccountModelAdapter());
   Hive.registerAdapter(CategoryModelAdapter());

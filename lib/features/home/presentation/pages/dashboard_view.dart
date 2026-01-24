@@ -8,6 +8,8 @@ import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.d
 import 'package:push_wallet/features/settings/presentation/pages/settings_page.dart';
 import 'package:push_wallet/core/services/analytics_helper.dart';
 import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
+import 'package:push_wallet/features/account/presentation/pages/accounts_view.dart';
+import 'package:push_wallet/features/analytics/presentation/pages/analytics_view.dart';
 
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
@@ -38,9 +40,21 @@ class DashboardView extends StatelessWidget {
             // Accounts Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Accounts',
-                style: Theme.of(context).textTheme.titleLarge,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AccountsView()),
+                      ),
+                      child: Text(
+                        'Accounts',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
@@ -50,9 +64,15 @@ class DashboardView extends StatelessWidget {
             // Analytics Section (Pie Chart)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Analytics',
-                style: Theme.of(context).textTheme.titleLarge,
+              child: GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnalyticsView()),
+                ),
+                child: Text(
+                  'Analytics',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ),
             ),
             _buildAnalyticsChart(context),
@@ -64,9 +84,18 @@ class DashboardView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Recent Transactions',
-                    style: Theme.of(context).textTheme.titleLarge,
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const Scaffold(body: TransactionsView()),
+                      ),
+                    ),
+                    child: Text(
+                      'Recent Transactions',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -268,32 +297,41 @@ class DashboardView extends StatelessWidget {
               itemCount: state.accounts.length,
               itemBuilder: (context, index) {
                 final account = state.accounts[index];
-                return Container(
-                  width: 140,
-                  margin: const EdgeInsets.only(right: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          AnalyticsView(initialAccountId: account.id),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        account.name,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '\$${account.balance.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                  child: Container(
+                    width: 140,
+                    margin: const EdgeInsets.only(right: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          account.name,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '\$${account.balance.toStringAsFixed(2)}',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -332,19 +370,13 @@ class DashboardView extends StatelessWidget {
                     sections: data.entries.map((e) {
                       return PieChartSectionData(
                         value: e.value,
-                        title: '', // e.key,
+                        title: '',
                         radius: 50,
-                        color:
-                            Colors.primaries[data.keys.toList().indexOf(e.key) %
-                                Colors.primaries.length],
+                        color: Color(e.key.color),
                         badgeWidget: _Badge(
-                          e.key,
+                          e.key.icon,
                           size: 40,
-                          borderColor:
-                              Colors.primaries[data.keys.toList().indexOf(
-                                    e.key,
-                                  ) %
-                                  Colors.primaries.length],
+                          borderColor: Color(e.key.color),
                         ),
                         badgePositionPercentageOffset: .98,
                       );
@@ -452,8 +484,11 @@ class _Badge extends StatelessWidget {
       child: Center(
         child: FittedBox(
           child: Text(
-            text.characters.first, // Just first letter
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            text,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'MaterialIcons',
+            ),
           ),
         ),
       ),

@@ -5,80 +5,84 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="8dp">
 
+    <!-- Amount Display -->
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/amount_display"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quick Add"
+        android:background="#1A000000"
+        android:padding="12dp"
+        android:gravity="end"
+        android:text="0"
         android:textColor="#FFFFFF"
-        android:textSize="16sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
-    <!-- 
-       NOTE: Android Widgets have very limited support for input.
-       AppWidgetHostView does NOT support EditText well in many launchers, 
-       and it's complex to get the text back without user interaction.
-       
-       Simpler Approach:
-       Just a 'Launch' button logic for now? 
-       OR we use a pending intent to launch an activity that is transparent to get input.
-       
-       HOWEVER, the user asked for "Input of Transaction".
-       
-       Standard approach for this in Flutter home_widget:
-       Usually we don't do full input form in widget. We launch the app.
-       IF we want input on widget, we need to use RemoteViews and maybe a specific PendingIntent.
-       EditText is theoretically supported but often buggy in widgets.
-       
-       Let's try a standard click-to-open approach first, 
-       OR a preset buttons approach? 
-       
-       Wait, let's try to stick to the plan: "Type amount in widget".
-       This is hard to do reliably in standard widgets. 
-       
-       BETTER UX: 
-       A layout that looks like an input, but clicking it opens the app 
-       with keyboard auto-focused on the amount field. 
-       This is robust.
-       
-       Let's implement a clean "Plus" button that opens the QuickAdd sheet directly.
-       And maybe 3 shortcuts: "Food", "Transport", etc? (Too complex for dynamic user data).
-       
-       Let's stick to a clean "Add Transaction" button widget for now that deep links 
-       directly to the add sheet.
-       
-       Wait, the user EXPLICITLY said "needs input of Transaction".
-       If I cannot do EditText reliably, I should probably do a "Quick Add" button 
-       that launches the app immediately to the input screen.
-       
-       Let's add a visual text input that is clickable but actually launches the app.
-    -->
-
+    <!-- Keypad Grid -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:id="@+id/input_container"
-        android:clickable="true">
-        
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Tap to enter amount..."
-            android:textColor="#757575"
-            android:textSize="14sp" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_input_add"
-            android:tint="#000000" />
-            
+        <!-- Row 1: 1 2 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <Button android:id="@+id/btn_1" style="@style/WidgetKeypadButton" android:text="1" />
+            <Button android:id="@+id/btn_2" style="@style/WidgetKeypadButton" android:text="2" />
+            <Button android:id="@+id/btn_3" style="@style/WidgetKeypadButton" android:text="3" />
+        </LinearLayout>
+
+        <!-- Row 2: 4 5 6 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <Button android:id="@+id/btn_4" style="@style/WidgetKeypadButton" android:text="4" />
+            <Button android:id="@+id/btn_5" style="@style/WidgetKeypadButton" android:text="5" />
+            <Button android:id="@+id/btn_6" style="@style/WidgetKeypadButton" android:text="6" />
+        </LinearLayout>
+
+        <!-- Row 3: 7 8 9 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <Button android:id="@+id/btn_7" style="@style/WidgetKeypadButton" android:text="7" />
+            <Button android:id="@+id/btn_8" style="@style/WidgetKeypadButton" android:text="8" />
+            <Button android:id="@+id/btn_9" style="@style/WidgetKeypadButton" android:text="9" />
+        </LinearLayout>
+
+        <!-- Row 4: . 0 Clear -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <Button android:id="@+id/btn_dot" style="@style/WidgetKeypadButton" android:text="." />
+            <Button android:id="@+id/btn_0" style="@style/WidgetKeypadButton" android:text="0" />
+            <Button android:id="@+id/btn_clear" style="@style/WidgetKeypadButton" android:text="C" android:textColor="#FF5252" />
+        </LinearLayout>
+
     </LinearLayout>
+
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE TRANSACTION"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginTop="4dp" />
 
 </LinearLayout>
