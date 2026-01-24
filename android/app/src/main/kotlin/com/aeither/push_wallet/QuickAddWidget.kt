@@ -1,11 +1,11 @@
-package com.example.push_wallet
+package com.aeither.push_wallet
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetBackgroundIntent
-import es.antonborri.home_widget.HomeWidgetProvider
+import es.antonborri.home_widget.HomeWidgetPlugin
 
 class QuickAddWidget : AppWidgetProvider() {
     override fun onUpdate(
@@ -25,7 +25,8 @@ internal fun updateAppWidget(
     appWidgetId: Int
 ) {
     // 1. Retrieve Current Amount from SharedPrefs (synced via HomeWidget)
-    val widgetData = HomeWidgetProvider.getData(context)
+    // Using HomeWidgetPlugin.getData(context) for version 0.9.0 compatibility
+    val widgetData = HomeWidgetPlugin.getData(context)
     val currentAmount = widgetData.getString("widget_amount", "0")
 
     val views = RemoteViews(context.packageName, R.layout.widget_layout)
