@@ -40,7 +40,7 @@ class AddTransaction implements UseCase<void, TransactionEntity> {
         // Income
         // If Card: Repayment (Decrease Debt/Balance)
         // If Asset: Increase Balance
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance - transaction.amount
             : sourceAccount.balance + transaction.amount;
 
@@ -58,7 +58,7 @@ class AddTransaction implements UseCase<void, TransactionEntity> {
         // Expense
         // If Card: Purchase (Increase Debt/Balance)
         // If Asset: Decrease Balance
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance + transaction.amount
             : sourceAccount.balance - transaction.amount;
 
@@ -76,7 +76,7 @@ class AddTransaction implements UseCase<void, TransactionEntity> {
         // Transfer Check: Source
         // If Source is Card: Transferring OUT (Cash Advance?) -> Increase Debt
         // If Source is Asset: Decrease Balance
-        final newSourceBalance = sourceAccount.type == 'Card'
+        final newSourceBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance + transaction.amount
             : sourceAccount.balance - transaction.amount;
 
@@ -101,7 +101,7 @@ class AddTransaction implements UseCase<void, TransactionEntity> {
             // Transfer Check: Destination
             // If Dest is Card: Payment/Repayment -> Decrease Debt
             // If Dest is Asset: Increase Balance
-            final newDestBalance = destAccount.type == 'Card'
+            final newDestBalance = (destAccount.type == 'Card' || destAccount.type == 'Loan')
                 ? destAccount.balance - transaction.amount
                 : destAccount.balance + transaction.amount;
 

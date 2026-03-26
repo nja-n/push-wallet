@@ -53,24 +53,23 @@ class UpdateTransaction implements UseCase<void, TransactionEntity> {
       final sourceAccount = sourceAccountHelper.first;
 
       Account updatedSource;
-
+      
       if (transaction.type == TransactionType.income) {
-        // Revert Income: Card ? + amt : - amt
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance + transaction.amount
             : sourceAccount.balance - transaction.amount;
         updatedSource = sourceAccount.copyWith(balance: newBalance);
         await accountRepository.updateAccount(updatedSource);
       } else if (transaction.type == TransactionType.expense) {
         // Revert Expense: Card ? - amt : + amt
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance - transaction.amount
             : sourceAccount.balance + transaction.amount;
         updatedSource = sourceAccount.copyWith(balance: newBalance);
         await accountRepository.updateAccount(updatedSource);
       } else if (transaction.type == TransactionType.transfer) {
         // Revert Source: Card ? - amt : + amt
-        final newSourceBalance = sourceAccount.type == 'Card'
+        final newSourceBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance - transaction.amount
             : sourceAccount.balance + transaction.amount;
         updatedSource = sourceAccount.copyWith(balance: newSourceBalance);
@@ -83,7 +82,7 @@ class UpdateTransaction implements UseCase<void, TransactionEntity> {
           if (destAccountHelper.isNotEmpty) {
             final destAccount = destAccountHelper.first;
             // Revert Dest: Card ? + amt : - amt
-            final newDestBalance = destAccount.type == 'Card'
+            final newDestBalance = (destAccount.type == 'Card' || destAccount.type == 'Loan')
                 ? destAccount.balance + transaction.amount
                 : destAccount.balance - transaction.amount;
             final updatedDest = destAccount.copyWith(balance: newDestBalance);
@@ -111,21 +110,21 @@ class UpdateTransaction implements UseCase<void, TransactionEntity> {
 
       if (transaction.type == TransactionType.income) {
         // Apply Income: Card ? - amt : + amt
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance - transaction.amount
             : sourceAccount.balance + transaction.amount;
         updatedSource = sourceAccount.copyWith(balance: newBalance);
         await accountRepository.updateAccount(updatedSource);
       } else if (transaction.type == TransactionType.expense) {
         // Apply Expense: Card ? + amt : - amt
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance + transaction.amount
             : sourceAccount.balance - transaction.amount;
         updatedSource = sourceAccount.copyWith(balance: newBalance);
         await accountRepository.updateAccount(updatedSource);
       } else if (transaction.type == TransactionType.transfer) {
         // Apply Source: Card ? + amt : - amt
-        final newSourceBalance = sourceAccount.type == 'Card'
+        final newSourceBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance + transaction.amount
             : sourceAccount.balance - transaction.amount;
         updatedSource = sourceAccount.copyWith(balance: newSourceBalance);
@@ -138,7 +137,7 @@ class UpdateTransaction implements UseCase<void, TransactionEntity> {
           if (destAccountHelper.isNotEmpty) {
             final destAccount = destAccountHelper.first;
             // Apply Dest: Card ? - amt : + amt
-            final newDestBalance = destAccount.type == 'Card'
+            final newDestBalance = (destAccount.type == 'Card' || destAccount.type == 'Loan')
                 ? destAccount.balance - transaction.amount
                 : destAccount.balance + transaction.amount;
             final updatedDest = destAccount.copyWith(balance: newDestBalance);

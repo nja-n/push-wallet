@@ -63,7 +63,7 @@ class _AccountsViewState extends State<AccountsView> {
 
                 double totalBalance = 0;
                 for (var acc in state.accounts) {
-                  if (acc.type == 'Card') {
+                  if (acc.type == 'Card' || acc.type == 'Loan') {
                     totalBalance -= acc.balance; // Debt subtracts from total
                   } else {
                     totalBalance += acc.balance;
@@ -87,25 +87,39 @@ class _AccountsViewState extends State<AccountsView> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            '$currency${totalBalance.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  totalBalance >= 0 ? Colors.green : Colors.red,
-                            ),
+                          Row(
+                            children: [
+                              if (totalBalance < 0)
+                                const Icon(Icons.remove, color: Colors.red, size: 18),
+                              Text(
+                                '$currency${totalBalance.abs().toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      totalBalance >= 0 ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
+                      child: ReorderableListView.builder(
                         padding: const EdgeInsets.all(8),
                         itemCount: state.accounts.length,
+                        onReorder: (oldIndex, newIndex) {
+                          context.read<AccountCubit>().reorderAccount(
+                            oldIndex,
+                            newIndex,
+                          );
+                        },
                         itemBuilder: (context, index) {
                           final account = state.accounts[index];
                           final isCard = account.type == 'Card';
+                          final isLoan = account.type == 'Loan';
+                          final isDebt = isCard || isLoan;
 
                           String subtitle = account.type;
                           if (isCard && account.creditLimit != null) {
@@ -113,9 +127,13 @@ class _AccountsViewState extends State<AccountsView> {
                                 account.creditLimit! - account.balance;
                             subtitle +=
                                 ' • Limit: $currency${account.creditLimit!.toStringAsFixed(0)} • Avail: $currency${available.toStringAsFixed(2)}';
+                          } else if (isLoan && account.creditLimit != null) {
+                            subtitle +=
+                                ' • Total: $currency${account.creditLimit!.toStringAsFixed(0)} • Rem: $currency${account.balance.toStringAsFixed(2)}';
                           }
 
                           return Card(
+                            key: ValueKey(account.id),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Color(account.color),
@@ -126,12 +144,18 @@ class _AccountsViewState extends State<AccountsView> {
                               ),
                               title: Text(account.name),
                               subtitle: Text(subtitle),
-                              trailing: Text(
-                                '$currency${account.balance.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  color: isCard ? Colors.red : Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '$currency${account.balance.abs().toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      color: isDebt ? Colors.red : Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                ],
                               ),
                               onTap:
                                   () => _showAddAccountDialog(

@@ -12,8 +12,9 @@ import 'package:uuid/uuid.dart';
 
 class AddTransactionSheet extends StatefulWidget {
   final TransactionEntity? transaction;
+  final String? initialAccountId;
 
-  const AddTransactionSheet({super.key, this.transaction});
+  const AddTransactionSheet({super.key, this.transaction, this.initialAccountId});
 
   @override
   State<AddTransactionSheet> createState() => _AddTransactionSheetState();
@@ -44,6 +45,8 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       _subCategoryId = t.subCategoryId;
       _selectedDate = t.date;
       _selectedTime = TimeOfDay.fromDateTime(t.date);
+    } else if (widget.initialAccountId != null) {
+      _accountId = widget.initialAccountId;
     }
   }
 

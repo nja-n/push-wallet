@@ -7,6 +7,7 @@ import 'package:push_wallet/features/transaction/presentation/bloc/transaction_c
 import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:push_wallet/features/settings/presentation/pages/settings_page.dart';
 import 'package:push_wallet/core/services/analytics_helper.dart';
+import 'package:push_wallet/features/transaction/presentation/widgets/add_transaction_sheet.dart';
 import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
 import 'package:push_wallet/features/account/presentation/pages/accounts_view.dart';
 import 'package:push_wallet/features/analytics/presentation/pages/analytics_view.dart';
@@ -165,7 +166,7 @@ class DashboardView extends StatelessWidget {
                   totalBalance = accState.accounts.fold(
                     0,
                     (sum, item) =>
-                        item.type == 'Card'
+                        (item.type == 'Card' || item.type == 'Loan')
                             ? sum - item.balance
                             : sum + item.balance,
                   );
@@ -213,13 +214,20 @@ class DashboardView extends StatelessWidget {
                         style: TextStyle(color: Colors.white.withOpacity(0.8)),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '$currency${totalBalance.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (totalBalance < 0)
+                            const Icon(Icons.remove, color: Colors.white, size: 24),
+                          Text(
+                            '$currency${totalBalance.abs().toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 24),
                       Row(
@@ -308,14 +316,15 @@ class DashboardView extends StatelessWidget {
               itemCount: state.accounts.length,
               itemBuilder: (context, index) {
                 final account = state.accounts[index];
+                final isDebt = account.type == 'Card' || account.type == 'Loan';
                 return GestureDetector(
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AnalyticsView(initialAccountId: account.id),
-                        ),
-                      ),
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => AddTransactionSheet(initialAccountId: account.id),
+                    );
+                  },
                   child: Container(
                     width: 140,
                     margin: const EdgeInsets.only(right: 12),
@@ -336,10 +345,23 @@ class DashboardView extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          '$currency${account.balance.toStringAsFixed(2)}',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            if (isDebt)
+                              const Icon(
+                                Icons.remove,
+                                color: Colors.red,
+                                size: 14,
+                              ),
+                            Text(
+                              '$currency${account.balance.toStringAsFixed(2)}',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isDebt ? Colors.red : Colors.green,
+                                  ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

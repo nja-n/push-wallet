@@ -39,7 +39,7 @@ class DeleteTransaction implements UseCase<void, TransactionEntity> {
       if (transaction.type == TransactionType.income) {
         // Income was: Card ? - amt : + amt
         // Revert: Card ? + amt : - amt
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance + transaction.amount
             : sourceAccount.balance - transaction.amount;
 
@@ -48,7 +48,7 @@ class DeleteTransaction implements UseCase<void, TransactionEntity> {
       } else if (transaction.type == TransactionType.expense) {
         // Expense was: Card ? + amt : - amt
         // Revert: Card ? - amt : + amt
-        final newBalance = sourceAccount.type == 'Card'
+        final newBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance - transaction.amount
             : sourceAccount.balance + transaction.amount;
 
@@ -57,7 +57,7 @@ class DeleteTransaction implements UseCase<void, TransactionEntity> {
       } else if (transaction.type == TransactionType.transfer) {
         // Transfer Source was: Card ? + amt : - amt
         // Revert Source: Card ? - amt : + amt
-        final newSourceBalance = sourceAccount.type == 'Card'
+        final newSourceBalance = (sourceAccount.type == 'Card' || sourceAccount.type == 'Loan')
             ? sourceAccount.balance - transaction.amount
             : sourceAccount.balance + transaction.amount;
 
@@ -73,7 +73,7 @@ class DeleteTransaction implements UseCase<void, TransactionEntity> {
 
             // Transfer Dest was: Card ? - amt : + amt
             // Revert Dest: Card ? + amt : - amt
-            final newDestBalance = destAccount.type == 'Card'
+            final newDestBalance = (destAccount.type == 'Card' || destAccount.type == 'Loan')
                 ? destAccount.balance + transaction.amount
                 : destAccount.balance - transaction.amount;
 

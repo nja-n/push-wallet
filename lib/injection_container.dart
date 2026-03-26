@@ -24,6 +24,8 @@ import 'features/transaction/domain/usecases/update_transaction.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  final settingsBox = await Hive.openBox('settings');
+
   // Features - Account
   // Bloc
   sl.registerFactory(
@@ -32,6 +34,7 @@ Future<void> init() async {
       addAccount: sl(),
       deleteAccount: sl(),
       updateAccount: sl(),
+      settingsBox: settingsBox,
     ),
   );
 
@@ -71,6 +74,7 @@ Future<void> init() async {
       addCategory: sl(),
       deleteCategory: sl(),
       updateCategory: sl(),
+      settingsBox: settingsBox,
     ),
   );
 
@@ -89,7 +93,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UpdateTransaction(sl(), sl()));
 
   // Features - Settings
-  final settingsBox = await Hive.openBox('settings');
   sl.registerLazySingleton<BackupService>(
     () => BackupService(
       accountBox: sl(),

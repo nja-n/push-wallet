@@ -87,11 +87,16 @@ class _CategoriesViewState extends State<CategoriesView> {
     if (categories.isEmpty) {
       return const Center(child: Text('No categories found.'));
     }
-    return ListView.builder(
+    return ReorderableListView.builder(
+      onReorder: (oldIndex, newIndex) {
+        final isIncome = categories.isNotEmpty && categories.first.isIncome;
+        context.read<CategoryCubit>().reorderCategory(oldIndex, newIndex, isIncome);
+      },
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final cat = categories[index];
         return ListTile(
+          key: ValueKey(cat.id),
           leading: CircleAvatar(
             backgroundColor: Color(cat.color),
             child: Text(cat.icon, style: const TextStyle(fontSize: 24)),

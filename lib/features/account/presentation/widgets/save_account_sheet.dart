@@ -194,13 +194,13 @@ class _SaveAccountSheetState extends State<SaveAccountSheet> {
             ),
             const SizedBox(height: 12),
 
-            if (!isEdit && _type == 'Card') ...[
+            if (!isEdit && (_type == 'Card' || _type == 'Loan')) ...[
               TextField(
                 controller: _balanceController,
-                decoration: const InputDecoration(
-                  labelText: 'Current Owed Amount',
-                  prefixIcon: Icon(Icons.money_off),
-                  helperText: 'Enter positive amount for debt',
+                decoration: InputDecoration(
+                  labelText: _type == 'Loan' ? 'Remaining Principal' : 'Current Owed Amount',
+                  prefixIcon: const Icon(Icons.money_off),
+                  helperText: _type == 'Loan' ? 'Enter current debt amount' : 'Enter positive amount for debt',
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -217,12 +217,12 @@ class _SaveAccountSheetState extends State<SaveAccountSheet> {
               const SizedBox(height: 12),
             ],
 
-            if (_type == 'Card') ...[
+            if (_type == 'Card' || _type == 'Loan') ...[
               TextField(
                 controller: _creditLimitController,
-                decoration: const InputDecoration(
-                  labelText: 'Credit Limit',
-                  prefixIcon: Icon(Icons.credit_card),
+                decoration: InputDecoration(
+                  labelText: _type == 'Loan' ? 'Total Loan Amount' : 'Credit Limit',
+                  prefixIcon: Icon(_type == 'Loan' ? Icons.handshake : Icons.credit_card),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -240,8 +240,17 @@ class _SaveAccountSheetState extends State<SaveAccountSheet> {
                 'Bank',
                 'Wallet',
                 'Card',
+                'Loan',
               ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-              onChanged: (val) => setState(() => _type = val!),
+              onChanged: (val) {
+                setState(() {
+                  _type = val!;
+                  if (_type == 'Loan') {
+                    _selectedIcon = '🤝';
+                    _selectedColor = 0xFF607D8B; // Blue Grey
+                  }
+                });
+              },
             ),
 
             const SizedBox(height: 24),
@@ -250,7 +259,7 @@ class _SaveAccountSheetState extends State<SaveAccountSheet> {
                 if (_nameController.text.isEmpty) return;
 
                 final balance = double.tryParse(_balanceController.text) ?? 0.0;
-                final creditLimit = _type == 'Card'
+                final creditLimit = (_type == 'Card' || _type == 'Loan')
                     ? double.tryParse(_creditLimitController.text)
                     : null;
 
