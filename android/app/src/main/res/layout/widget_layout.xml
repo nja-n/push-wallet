@@ -7,12 +7,12 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- Amount Display -->
+    <!-- Amount Display (Fixed Height, Top) -->
     <TextView
         android:id="@+id/amount_display"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#1A000000"
+        android:background="#33000000"
         android:padding="12dp"
         android:gravity="end"
         android:text="0"
@@ -21,7 +21,7 @@
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
-    <!-- Keypad Grid -->
+    <!-- Keypad Grid (Expands to fill available space) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -71,15 +71,14 @@
             <Button android:id="@+id/btn_0" style="@style/WidgetKeypadButton" android:text="0" />
             <Button android:id="@+id/btn_clear" style="@style/WidgetKeypadButton" android:text="C" android:textColor="#FF5252" />
         </LinearLayout>
-
     </LinearLayout>
 
-    <!-- Save Button -->
+    <!-- Save Button (Fixed Height, Bottom) -->
     <Button
         android:id="@+id/btn_save"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SAVE TRANSACTION"
+        android:text="SAVE"
         android:backgroundTint="#4CAF50"
         android:textColor="#FFFFFF"
         android:textStyle="bold"

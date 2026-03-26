@@ -528,6 +528,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
+  math_expressions:
+    dependency: "direct main"
+    description:
+      name: math_expressions
+      sha256: "2e1ceb974c2b1893c809a68c7005f1b63f7324db0add800a0e792b1ac8ff9f03"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   meta:
     dependency: transitive
     description:
@@ -784,6 +792,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
+  showcaseview:
+    dependency: "direct main"
+    description:
+      name: showcaseview
+      sha256: "59e5edf33cbe3afb56edcbf25de553211409a576cbbbdda226c574410a314a71"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.1"
   simple_gesture_detector:
     dependency: transitive
     description:

@@ -6,6 +6,8 @@ import 'package:push_wallet/features/account/presentation/bloc/account_cubit.dar
 import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart';
 import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'package:push_wallet/features/transaction/domain/entities/transaction_entity.dart';
+import 'package:push_wallet/features/transaction/presentation/widgets/calculator_keyboard.dart';
+import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:uuid/uuid.dart';
 
 class AddTransactionSheet extends StatefulWidget {
@@ -47,316 +49,352 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
+        final currency =
+            (settingsState is SettingsLoaded)
+                ? settingsState.currencySymbol
+                : '\$';
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                widget.transaction == null
-                    ? 'Add Transaction'
-                    : 'Edit Transaction',
-                style: Theme.of(context).textTheme.headlineSmall,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.transaction == null
+                        ? 'Add Transaction'
+                        : 'Edit Transaction',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
               ),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-          // Transaction Type Segmented Control style
-          SegmentedButton<TransactionType>(
-            segments: const [
-              ButtonSegment(
-                value: TransactionType.income,
-                label: Text('Income'),
-                icon: Icon(Icons.arrow_downward),
-              ),
-              ButtonSegment(
-                value: TransactionType.expense,
-                label: Text('Expense'),
-                icon: Icon(Icons.arrow_upward),
-              ),
-              ButtonSegment(
-                value: TransactionType.transfer,
-                label: Text('Transfer'),
-                icon: Icon(Icons.swap_horiz),
-              ),
-            ],
-            selected: {_type},
-            onSelectionChanged: (Set<TransactionType> newSelection) {
-              setState(() {
-                _type = newSelection.first;
-                // Only reset category if switching type generally, but for edit we might want to keep?
-                // If editing, user might change type intentionally.
-                // Resetting is safer to avoid invalid states.
-                if (widget.transaction?.type != _type) {
-                  _categoryId = null;
-                  _subCategoryId = null;
-                }
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-
-          BlocBuilder<TransactionCubit, TransactionState>(
-            builder: (context, state) {
-              List<String> options = [];
-              if (state is TransactionLoaded) {
-                // Extract unique descriptions
-                options = state.transactions
-                    .map((t) => t.description)
-                    .where((d) => d.isNotEmpty)
-                    .toSet()
-                    .toList();
-              }
-
-              return RawAutocomplete<String>(
-                textEditingController: _descController,
-                focusNode: FocusNode(), // Simple focus node
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  if (textEditingValue.text == '') {
-                    return const Iterable<String>.empty();
-                  }
-                  return options.where((String option) {
-                    return option.toLowerCase().contains(
-                      textEditingValue.text.toLowerCase(),
-                    );
+              // Transaction Type Segmented Control style
+              SegmentedButton<TransactionType>(
+                segments: const [
+                  ButtonSegment(
+                    value: TransactionType.income,
+                    label: Text('Income'),
+                    icon: Icon(Icons.arrow_downward),
+                  ),
+                  ButtonSegment(
+                    value: TransactionType.expense,
+                    label: Text('Expense'),
+                    icon: Icon(Icons.arrow_upward),
+                  ),
+                  ButtonSegment(
+                    value: TransactionType.transfer,
+                    label: Text('Transfer'),
+                    icon: Icon(Icons.swap_horiz),
+                  ),
+                ],
+                selected: {_type},
+                onSelectionChanged: (Set<TransactionType> newSelection) {
+                  setState(() {
+                    _type = newSelection.first;
+                    // Only reset category if switching type generally, but for edit we might want to keep?
+                    // If editing, user might change type intentionally.
+                    // Resetting is safer to avoid invalid states.
+                    if (widget.transaction?.type != _type) {
+                      _categoryId = null;
+                      _subCategoryId = null;
+                    }
                   });
                 },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onEditingComplete) {
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                          prefixIcon: Icon(Icons.description),
-                        ),
-                      );
-                    },
-                optionsViewBuilder:
-                    (
-                      BuildContext context,
-                      AutocompleteOnSelected<String> onSelected,
-                      Iterable<String> options,
-                    ) {
-                      return Align(
-                        alignment: Alignment.topLeft,
-                        child: Material(
-                          elevation: 4.0,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxHeight: 200,
-                              maxWidth: 300,
-                            ),
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(8.0),
-                              itemCount: options.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                final String option = options.elementAt(index);
-                                return InkWell(
-                                  onTap: () {
-                                    onSelected(option);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Text(option),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _amountController,
-            decoration: const InputDecoration(
-              labelText: 'Amount',
-              prefixIcon: Icon(Icons.attach_money),
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-          const SizedBox(height: 12),
+              ),
+              const SizedBox(height: 16),
 
-          // Date & Time
-          Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: _pickDate,
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Date',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(),
+              BlocBuilder<TransactionCubit, TransactionState>(
+                builder: (context, state) {
+                  List<String> options = [];
+                  if (state is TransactionLoaded) {
+                    // Extract unique descriptions
+                    options = state.transactions
+                        .map((t) => t.description)
+                        .where((d) => d.isNotEmpty)
+                        .toSet()
+                        .toList();
+                  }
+
+                  return RawAutocomplete<String>(
+                    textEditingController: _descController,
+                    focusNode: FocusNode(), // Simple focus node
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text == '') {
+                        return const Iterable<String>.empty();
+                      }
+                      return options.where((String option) {
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
+                      });
+                    },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onEditingComplete) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            onEditingComplete: onEditingComplete,
+                            decoration: const InputDecoration(
+                              labelText: 'Description',
+                              prefixIcon: Icon(Icons.description),
+                            ),
+                          );
+                        },
+                    optionsViewBuilder:
+                        (
+                          BuildContext context,
+                          AutocompleteOnSelected<String> onSelected,
+                          Iterable<String> options,
+                        ) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxHeight: 200,
+                                  maxWidth: 300,
+                                ),
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.all(8.0),
+                                  itemCount: options.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                        final String option = options.elementAt(
+                                          index,
+                                        );
+                                        return InkWell(
+                                          onTap: () {
+                                            onSelected(option);
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Text(option),
+                                          ),
+                                        );
+                                      },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _amountController,
+                readOnly: true, // Prevent system keyboard
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder:
+                        (context) => CalculatorKeyboard(
+                          controller: _amountController,
+                          onDone: () => Navigator.pop(context),
+                        ),
+                  );
+                },
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      currency,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    child: Text(DateFormat('yyyy-MM-dd').format(_selectedDate)),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: InkWell(
-                  onTap: _pickTime,
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Time',
-                      prefixIcon: Icon(Icons.access_time),
-                      border: OutlineInputBorder(),
+              const SizedBox(height: 12),
+
+              // Date & Time
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: _pickDate,
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Date',
+                          prefixIcon: Icon(Icons.calendar_today),
+                          border: OutlineInputBorder(),
+                        ),
+                        child: Text(
+                          DateFormat('yyyy-MM-dd').format(_selectedDate),
+                        ),
+                      ),
                     ),
-                    child: Text(_selectedTime.format(context)),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: InkWell(
+                      onTap: _pickTime,
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Time',
+                          prefixIcon: Icon(Icons.access_time),
+                          border: OutlineInputBorder(),
+                        ),
+                        child: Text(_selectedTime.format(context)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Account Dropdown
+              BlocBuilder<AccountCubit, AccountState>(
+                builder: (context, state) {
+                  var accounts = <dynamic>[];
+                  if (state is AccountLoaded) accounts = state.accounts;
+
+                  return DropdownButtonFormField<String>(
+                    value: _accountId,
+                    decoration: const InputDecoration(
+                      labelText: 'Account',
+                      prefixIcon: Icon(Icons.account_balance_wallet),
+                    ),
+                    items: accounts.map<DropdownMenuItem<String>>((e) {
+                      return DropdownMenuItem(value: e.id, child: Text(e.name));
+                    }).toList(),
+                    onChanged: (val) => setState(() => _accountId = val),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+
+              if (_type == TransactionType.transfer)
+                BlocBuilder<AccountCubit, AccountState>(
+                  builder: (context, state) {
+                    var accounts = <dynamic>[];
+                    if (state is AccountLoaded) accounts = state.accounts;
+
+                    return DropdownButtonFormField<String>(
+                      value: _toAccountId,
+                      decoration: const InputDecoration(
+                        labelText: 'To Account',
+                        prefixIcon: Icon(Icons.arrow_forward),
+                      ),
+                      items: accounts
+                          .where((e) => e.id != _accountId)
+                          .map<DropdownMenuItem<String>>((e) {
+                            return DropdownMenuItem(
+                              value: e.id,
+                              child: Text(e.name),
+                            );
+                          })
+                          .toList(),
+                      onChanged: (val) => setState(() => _toAccountId = val),
+                    );
+                  },
+                ),
+
+              if (_type != TransactionType.transfer)
+                BlocBuilder<CategoryCubit, CategoryState>(
+                  builder: (context, state) {
+                    var categories = <dynamic>[];
+                    if (state is CategoryLoaded) {
+                      categories = state.categories
+                          .where(
+                            (c) =>
+                                c.isIncome == (_type == TransactionType.income),
+                          )
+                          .toList();
+                    }
+
+                    // Find selected category object to check for subcategories
+                    final selectedCategory =
+                        (state is CategoryLoaded && _categoryId != null)
+                        ? state.categories
+                              .where((c) => c.id == _categoryId)
+                              .firstOrNull
+                        : null;
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          value: _categoryId,
+                          decoration: const InputDecoration(
+                            labelText: 'Category',
+                            prefixIcon: Icon(Icons.category),
+                          ),
+                          items: categories.map<DropdownMenuItem<String>>((e) {
+                            return DropdownMenuItem(
+                              value: e.id,
+                              child: Text(e.name),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _categoryId = val;
+                              _subCategoryId = null;
+                            });
+                          },
+                        ),
+                        if (selectedCategory != null &&
+                            selectedCategory.subCategories.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            value: _subCategoryId,
+                            decoration: const InputDecoration(
+                              labelText: 'Subcategory',
+                              prefixIcon: Icon(Icons.subdirectory_arrow_right),
+                            ),
+                            items: selectedCategory.subCategories
+                                .map<DropdownMenuItem<String>>((e) {
+                                  return DropdownMenuItem(
+                                    value: e.id,
+                                    child: Text(e.name),
+                                  );
+                                })
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => _subCategoryId = val),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _saveTransaction,
+                child: Text(
+                  widget.transaction == null
+                      ? 'Save Transaction'
+                      : 'Update Transaction',
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
-          const SizedBox(height: 12),
-
-          // Account Dropdown
-          BlocBuilder<AccountCubit, AccountState>(
-            builder: (context, state) {
-              var accounts = <dynamic>[];
-              if (state is AccountLoaded) accounts = state.accounts;
-
-              return DropdownButtonFormField<String>(
-                value: _accountId,
-                decoration: const InputDecoration(
-                  labelText: 'Account',
-                  prefixIcon: Icon(Icons.account_balance_wallet),
-                ),
-                items: accounts.map<DropdownMenuItem<String>>((e) {
-                  return DropdownMenuItem(value: e.id, child: Text(e.name));
-                }).toList(),
-                onChanged: (val) => setState(() => _accountId = val),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-
-          if (_type == TransactionType.transfer)
-            BlocBuilder<AccountCubit, AccountState>(
-              builder: (context, state) {
-                var accounts = <dynamic>[];
-                if (state is AccountLoaded) accounts = state.accounts;
-
-                return DropdownButtonFormField<String>(
-                  value: _toAccountId,
-                  decoration: const InputDecoration(
-                    labelText: 'To Account',
-                    prefixIcon: Icon(Icons.arrow_forward),
-                  ),
-                  items: accounts
-                      .where((e) => e.id != _accountId)
-                      .map<DropdownMenuItem<String>>((e) {
-                        return DropdownMenuItem(
-                          value: e.id,
-                          child: Text(e.name),
-                        );
-                      })
-                      .toList(),
-                  onChanged: (val) => setState(() => _toAccountId = val),
-                );
-              },
-            ),
-
-          if (_type != TransactionType.transfer)
-            BlocBuilder<CategoryCubit, CategoryState>(
-              builder: (context, state) {
-                var categories = <dynamic>[];
-                if (state is CategoryLoaded) {
-                  categories = state.categories
-                      .where(
-                        (c) => c.isIncome == (_type == TransactionType.income),
-                      )
-                      .toList();
-                }
-
-                // Find selected category object to check for subcategories
-                final selectedCategory =
-                    (state is CategoryLoaded && _categoryId != null)
-                    ? state.categories
-                          .where((c) => c.id == _categoryId)
-                          .firstOrNull
-                    : null;
-
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    DropdownButtonFormField<String>(
-                      value: _categoryId,
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
-                        prefixIcon: Icon(Icons.category),
-                      ),
-                      items: categories.map<DropdownMenuItem<String>>((e) {
-                        return DropdownMenuItem(
-                          value: e.id,
-                          child: Text(e.name),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _categoryId = val;
-                          _subCategoryId = null;
-                        });
-                      },
-                    ),
-                    if (selectedCategory != null &&
-                        selectedCategory.subCategories.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: _subCategoryId,
-                        decoration: const InputDecoration(
-                          labelText: 'Subcategory',
-                          prefixIcon: Icon(Icons.subdirectory_arrow_right),
-                        ),
-                        items: selectedCategory.subCategories
-                            .map<DropdownMenuItem<String>>((e) {
-                              return DropdownMenuItem(
-                                value: e.id,
-                                child: Text(e.name),
-                              );
-                            })
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _subCategoryId = val),
-                      ),
-                    ],
-                  ],
-                );
-              },
-            ),
-
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _saveTransaction,
-            child: Text(
-              widget.transaction == null
-                  ? 'Save Transaction'
-                  : 'Update Transaction',
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
+        );
+      },
     );
   }
 

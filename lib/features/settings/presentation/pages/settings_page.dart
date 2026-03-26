@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/settings_cubit.dart';
+import '../../../account/presentation/bloc/account_cubit.dart';
+import '../../../category/presentation/bloc/category_cubit.dart';
+import '../../../transaction/presentation/bloc/transaction_cubit.dart';
 import '../../../security/presentation/pages/security_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -167,10 +170,14 @@ class SettingsPage extends StatelessWidget {
                             ),
                           );
                           if (success) {
-                            // Ideally trigger a full app reload or re-fetch blocs
-                            // For now, simple re-fetch of accounts/transactions if possible
-                            // But since Blocs might hold old state, a full reload is safer
-                            // Or we can emit events to reload data.
+                            // Refresh all data providers
+                            if (context.mounted) {
+                              context.read<AccountCubit>().loadAccounts();
+                              context.read<CategoryCubit>().loadCategories();
+                              context
+                                  .read<TransactionCubit>()
+                                  .loadTransactions();
+                            }
                           }
                         }
                       },

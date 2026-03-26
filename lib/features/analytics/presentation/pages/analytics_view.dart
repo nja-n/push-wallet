@@ -9,6 +9,7 @@ import 'package:push_wallet/features/category/presentation/bloc/category_cubit.d
 
 import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
+import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 
 class AnalyticsView extends StatelessWidget {
   final String? initialAccountId;
@@ -19,51 +20,66 @@ class AnalyticsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Analytics')),
-      body: BlocBuilder<TransactionCubit, TransactionState>(
-        builder: (context, txState) {
-          return BlocBuilder<AccountCubit, AccountState>(
-            builder: (context, accState) {
-              return BlocBuilder<CategoryCubit, CategoryState>(
-                builder: (context, catState) {
-                  if (txState is TransactionLoaded &&
-                      accState is AccountLoaded &&
-                      catState is CategoryLoaded) {
-                    var transactions = txState.transactions;
-                    if (initialAccountId != null) {
-                      transactions = transactions
-                          .where((t) => t.accountId == initialAccountId)
-                          .toList();
-                    }
+      body: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, settingsState) {
+          final currency =
+              (settingsState is SettingsLoaded)
+                  ? settingsState.currencySymbol
+                  : '\$';
 
-                    final helper = AnalyticsHelper(
-                      transactions: transactions,
-                      accounts: accState.accounts,
-                      categories: catState.categories,
-                    );
+          return BlocBuilder<TransactionCubit, TransactionState>(
+            builder: (context, txState) {
+              return BlocBuilder<AccountCubit, AccountState>(
+                builder: (context, accState) {
+                  return BlocBuilder<CategoryCubit, CategoryState>(
+                    builder: (context, catState) {
+                      if (txState is TransactionLoaded &&
+                          accState is AccountLoaded &&
+                          catState is CategoryLoaded) {
+                        var transactions = txState.transactions;
+                        if (initialAccountId != null) {
+                          transactions = transactions
+                              .where((t) => t.accountId == initialAccountId)
+                              .toList();
+                        }
 
-                    return DefaultTabController(
-                      length: 2,
-                      child: Column(
-                        children: [
-                          const TabBar(
-                            tabs: [
-                              Tab(text: 'Expense'),
-                              Tab(text: 'Income'),
+                        final helper = AnalyticsHelper(
+                          transactions: transactions,
+                          accounts: accState.accounts,
+                          categories: catState.categories,
+                        );
+
+                        return DefaultTabController(
+                          length: 2,
+                          child: Column(
+                            children: [
+                              const TabBar(
+                                tabs: [
+                                  Tab(text: 'Expense'),
+                                  Tab(text: 'Income'),
+                                ],
+                              ),
+                              Expanded(
+                                child: TabBarView(
+                                  children: [
+                                    _ExpenseTab(
+                                      helper: helper,
+                                      currency: currency,
+                                    ),
+                                    _IncomeTab(
+                                      helper: helper,
+                                      currency: currency,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                          Expanded(
-                            child: TabBarView(
-                              children: [
-                                _ExpenseTab(helper: helper),
-                                _IncomeTab(helper: helper),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  return const Center(child: CircularProgressIndicator());
+                        );
+                      }
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  );
                 },
               );
             },
@@ -76,7 +92,8 @@ class AnalyticsView extends StatelessWidget {
 
 class _ExpenseTab extends StatelessWidget {
   final AnalyticsHelper helper;
-  const _ExpenseTab({required this.helper});
+  final String currency;
+  const _ExpenseTab({required this.helper, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -105,13 +122,13 @@ class _ExpenseTab extends StatelessWidget {
                 ),
               ),
               title: Text(e.key.name),
-              trailing: Text('\$${e.value.toStringAsFixed(2)}'),
+              trailing: Text('$currency${e.value.toStringAsFixed(2)}'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        TransactionsView(initialCategoryId: e.key.id),
+                    builder:
+                        (_) => TransactionsView(initialCategoryId: e.key.id),
                   ),
                 );
               },
@@ -129,13 +146,12 @@ class _ExpenseTab extends StatelessWidget {
                 ),
               ),
               title: Text(e.key.name),
-              trailing: Text('\$${e.value.toStringAsFixed(2)}'),
+              trailing: Text('$currency${e.value.toStringAsFixed(2)}'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        TransactionsView(initialAccountId: e.key.id),
+                    builder: (_) => TransactionsView(initialAccountId: e.key.id),
                   ),
                 );
               },
@@ -173,7 +189,8 @@ class _ExpenseTab extends StatelessWidget {
 
 class _IncomeTab extends StatelessWidget {
   final AnalyticsHelper helper;
-  const _IncomeTab({required this.helper});
+  final String currency;
+  const _IncomeTab({required this.helper, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +218,7 @@ class _IncomeTab extends StatelessWidget {
                 ),
               ),
               title: Text(e.key.name),
-              trailing: Text('\$${e.value.toStringAsFixed(2)}'),
+              trailing: Text('$currency${e.value.toStringAsFixed(2)}'),
               onTap: () {
                 Navigator.push(
                   context,

@@ -25,7 +25,7 @@ internal fun updateAppWidget(
     appWidgetId: Int
 ) {
     // 1. Retrieve Current Amount from SharedPrefs (synced via HomeWidget)
-    // Using HomeWidgetPlugin.getData(context) for version 0.9.0 compatibility
+    // HomeWidget.saveWidgetData saves to a SharedPreferences instance that HomeWidgetPlugin can read.
     val widgetData = HomeWidgetPlugin.getData(context)
     val currentAmount = widgetData.getString("widget_amount", "0")
 

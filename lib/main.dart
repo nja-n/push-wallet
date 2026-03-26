@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:push_wallet/core/services/widget_service.dart';
 import 'injection_container.dart' as di;
 import 'features/account/data/models/account_model.dart';
@@ -63,7 +65,7 @@ class MyApp extends StatelessWidget {
             home: state is SettingsLoaded
                 ? (state.isSecurityEnabled
                       ? const AppLockScreen()
-                      : const HomePage())
+                      : ShowCaseWidget(builder: (context) => const HomePage()))
                 : const Scaffold(
                     body: Center(child: CircularProgressIndicator()),
                   ),
@@ -76,6 +78,7 @@ class MyApp extends StatelessWidget {
   ThemeData _buildLightTheme() {
     final base = ThemeData.light();
     return base.copyWith(
+      textTheme: GoogleFonts.outfitTextTheme(base.textTheme),
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF2F3A43), // Brand Dark Blue-Grey
         surface: const Color(0xFFF8FAFC), // Soft gray background

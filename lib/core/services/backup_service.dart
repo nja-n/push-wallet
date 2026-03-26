@@ -7,6 +7,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'web_download_stub.dart'
+    if (dart.library.html) 'web_download_web.dart' as web_helper;
 
 import '../../features/account/data/models/account_model.dart';
 import '../../features/category/data/category_data.dart';
@@ -44,18 +47,22 @@ class BackupService {
       };
 
       final jsonString = jsonEncode(data);
+      final fileName =
+          'push_wallet_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.json';
 
-      // 2. Write to File
+      if (kIsWeb) {
+        // 2. Web specific download
+        web_helper.downloadFile(jsonString, fileName);
+        return;
+      }
+
+      // 2. Write to File (Mobile/Desktop)
       final directory = await getApplicationDocumentsDirectory();
-      final dateStr = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-      final fileName = 'push_wallet_backup_$dateStr.json';
       final file = File('${directory.path}/$fileName');
       await file.writeAsString(jsonString);
 
       // 3. Share File
-      final result = await Share.shareXFiles([
-        XFile(file.path),
-      ], text: 'Push Wallet Backup');
+      final result = await Share.shareXFiles([XFile(file.path)], text: 'Push Wallet Backup');
 
       if (result.status == ShareResultStatus.success) {
         // Optional: Update last backup time
@@ -81,9 +88,16 @@ class BackupService {
 
       if (result == null || result.files.isEmpty) return false;
 
-      final file = File(result.files.single.path!);
-      final jsonString = await file.readAsString();
-      final Map<String, dynamic> data = jsonDecode(jsonString);
+      final Map<String, dynamic> data;
+      if (kIsWeb) {
+        final bytes = result.files.single.bytes!;
+        final jsonString = utf8.decode(bytes);
+        data = jsonDecode(jsonString);
+      } else {
+        final file = File(result.files.single.path!);
+        final jsonString = await file.readAsString();
+        data = jsonDecode(jsonString);
+      }
 
       // 2. Validate
       if (!data.containsKey('accounts') ||
@@ -126,8 +140,9 @@ class BackupService {
       }
 
       return true;
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('Restore Error: $e');
+      debugPrint('Stack trace: $stack');
       return false;
     }
   }
@@ -167,6 +182,7 @@ class BackupService {
       'color': c.color,
       'icon': c.icon,
       'isIncome': c.isIncome,
+      'isDeleted': c.isDeleted,
       'subCategories': c.subCategories
           .map(
             (s) => {
@@ -187,6 +203,7 @@ class BackupService {
       color: json['color'],
       icon: json['icon'],
       isIncome: json['isIncome'],
+      isDeleted: json['isDeleted'] ?? false,
       subCategories: (json['subCategories'] as List)
           .map(
             (s) => SubCategoryModel(

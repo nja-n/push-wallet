@@ -29,253 +29,264 @@ class DashboardView extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Summary Section
-            _buildSummarySection(context),
-            const SizedBox(height: 24),
+      body: BlocBuilder<SettingsCubit, SettingsState>(
+        builder: (context, settingsState) {
+          final currency =
+              (settingsState is SettingsLoaded)
+                  ? settingsState.currencySymbol
+                  : '\$';
 
-            // Accounts Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const AccountsView()),
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Summary Section
+                _buildSummarySection(context, currency),
+                const SizedBox(height: 24),
+
+                // Accounts Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AccountsView(),
+                                ),
+                              ),
+                          child: Text(
+                            'Accounts',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
                       ),
-                      child: Text(
-                        'Accounts',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildAccountsList(context),
-            const SizedBox(height: 24),
-
-            // Analytics Section (Pie Chart)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AnalyticsView()),
                 ),
-                child: Text(
-                  'Analytics',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-            ),
-            _buildAnalyticsChart(context),
-            const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                _buildAccountsList(context, currency),
+                const SizedBox(height: 24),
 
-            // Recent Transactions
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const Scaffold(body: TransactionsView()),
-                      ),
-                    ),
+                // Analytics Section (Pie Chart)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GestureDetector(
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AnalyticsView(),
+                          ),
+                        ),
                     child: Text(
-                      'Recent Transactions',
+                      'Analytics',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to Transactions Tab manually or just pop?
-                      // Actually, Dashboard is part of Home. We can switch tab or push view.
-                      // For simplicity, let's just use the bottom nav bar, but user asked for "View All" button route.
-                      // Pushing TransactionsView directly might duplicate UI if it's already in tabs.
-                      // Ideally we switch tab index. But here we can push a dedicated history page or just switch tab.
-                      // Let's Find Ancestor NavigationBar? Or just tell user to click tab?
-                      // User requested "view all button route to transation page".
-                      // Let's try to switch tab if possible, or push a view.
-                      // Since TransactionsView is a tab, pushing it might be weird.
-                      // Let's Switch Tab!
-                      // But providing access to the state of HomePage index is hard from here without Provider.
-                      // Let's just push TransactionsView as a new screen for now.
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const Scaffold(body: TransactionsView()),
-                        ), // Temporary wrapper
-                      );
-                    },
-                    child: const Text('View All'),
+                ),
+                _buildAnalyticsChart(context),
+                const SizedBox(height: 24),
+
+                // Recent Transactions
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap:
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => const Scaffold(
+                                      body: TransactionsView(),
+                                    ),
+                              ),
+                            ),
+                        child: Text(
+                          'Recent Transactions',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // Navigate to Transactions Tab manually or just pop?
+                          // Actually, Dashboard is part of Home. We can switch tab or push view.
+                          // For simplicity, let's just use the bottom nav bar, but user asked for "View All" button route.
+                          // Pushing TransactionsView directly might duplicate UI if it's already in tabs.
+                          // Ideally we switch tab index. But here we can push a dedicated history page or just switch tab.
+                          // Let's Find Ancestor NavigationBar? Or just tell user to click tab?
+                          // User requested "view all button route to transation page".
+                          // Let's try to switch tab if possible, or push a view.
+                          // Since TransactionsView is a tab, pushing it might be weird.
+                          // Let's Switch Tab!
+                          // But providing access to the state of HomePage index is hard from here without Provider.
+                          // Let's just push TransactionsView as a new screen for now.
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => const Scaffold(
+                                    body: TransactionsView(),
+                                  ),
+                            ), // Temporary wrapper
+                          );
+                        },
+                        child: const Text('View All'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                _buildRecentTransactions(context, currency),
+                const SizedBox(height: 24),
+              ],
             ),
-            _buildRecentTransactions(context),
-            const SizedBox(height: 24),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSummarySection(BuildContext context) {
+  Widget _buildSummarySection(BuildContext context, String currency) {
     return BlocBuilder<TransactionCubit, TransactionState>(
       builder: (context, txState) {
         return BlocBuilder<AccountCubit, AccountState>(
           builder: (context, accState) {
             return BlocBuilder<CategoryCubit, CategoryState>(
               builder: (context, catState) {
-                return BlocBuilder<SettingsCubit, SettingsState>(
-                  builder: (context, setState) {
-                    final currency = (setState is SettingsLoaded)
-                        ? setState.currencySymbol
-                        : '\$';
-
-                    // Calculate Totals
-                    double totalBalance = 0;
-                    if (accState is AccountLoaded) {
-                      totalBalance = accState.accounts.fold(
-                        0,
-                        (sum, item) => item.type == 'Card'
+                // Calculate Totals
+                double totalBalance = 0;
+                if (accState is AccountLoaded) {
+                  totalBalance = accState.accounts.fold(
+                    0,
+                    (sum, item) =>
+                        item.type == 'Card'
                             ? sum - item.balance
                             : sum + item.balance,
-                      );
-                    }
+                  );
+                }
 
-                    double income = 0;
-                    double expense = 0;
+                double income = 0;
+                double expense = 0;
 
-                    if (txState is TransactionLoaded) {
-                      final helper = AnalyticsHelper(
-                        transactions: txState.transactions,
-                        accounts: (accState is AccountLoaded)
-                            ? accState.accounts
-                            : [],
-                        categories: (catState is CategoryLoaded)
-                            ? catState.categories
-                            : [],
-                      );
-                      income = helper.totalIncome;
-                      expense = helper.totalExpense;
-                    }
+                if (txState is TransactionLoaded) {
+                  final helper = AnalyticsHelper(
+                    transactions: txState.transactions,
+                    accounts: (accState is AccountLoaded)
+                        ? accState.accounts
+                        : [],
+                    categories: (catState is CategoryLoaded)
+                        ? catState.categories
+                        : [],
+                  );
+                  income = helper.totalIncome;
+                  expense = helper.totalExpense;
+                }
 
-                    return Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.blue.shade800, Colors.blue.shade500],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
+                return Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade800, Colors.blue.shade500],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
-                      child: Column(
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Total Balance',
+                        style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$currency${totalBalance.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Total Balance',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$currency${totalBalance.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.arrow_downward,
-                                        color: Colors.greenAccent,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Income',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
-                                        ),
-                                      ),
-                                    ],
+                                  const Icon(
+                                    Icons.arrow_downward,
+                                    color: Colors.greenAccent,
+                                    size: 16,
                                   ),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    '$currency${income.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
+                                    'Income',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
                                     ),
                                   ),
                                 ],
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              Text(
+                                '$currency${income.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.arrow_upward,
-                                        color: Colors.redAccent,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Expense',
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
-                                        ),
-                                      ),
-                                    ],
+                                  const Icon(
+                                    Icons.arrow_upward,
+                                    color: Colors.redAccent,
+                                    size: 16,
                                   ),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    '$currency${expense.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
+                                    'Expense',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
                                     ),
                                   ),
                                 ],
+                              ),
+                              Text(
+                                '$currency${expense.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 );
               },
             );
@@ -285,7 +296,7 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountsList(BuildContext context) {
+  Widget _buildAccountsList(BuildContext context, String currency) {
     return BlocBuilder<AccountCubit, AccountState>(
       builder: (context, state) {
         if (state is AccountLoaded) {
@@ -298,13 +309,13 @@ class DashboardView extends StatelessWidget {
               itemBuilder: (context, index) {
                 final account = state.accounts[index];
                 return GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          AnalyticsView(initialAccountId: account.id),
-                    ),
-                  ),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AnalyticsView(initialAccountId: account.id),
+                        ),
+                      ),
                   child: Container(
                     width: 140,
                     margin: const EdgeInsets.only(right: 12),
@@ -326,7 +337,7 @@ class DashboardView extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '\$${account.balance.toStringAsFixed(2)}',
+                          '$currency${account.balance.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
@@ -394,7 +405,7 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context) {
+  Widget _buildRecentTransactions(BuildContext context, String currency) {
     return BlocBuilder<TransactionCubit, TransactionState>(
       builder: (context, state) {
         if (state is TransactionLoaded) {
@@ -413,20 +424,22 @@ class DashboardView extends StatelessWidget {
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
-                  backgroundColor: t.type.index == 0
-                      ? Colors.green.withOpacity(0.1)
-                      : (t.type.index == 1
-                            ? Colors.red.withOpacity(0.1)
-                            : Colors.blue.withOpacity(0.1)),
+                  backgroundColor:
+                      t.type.index == 0
+                          ? Colors.green.withOpacity(0.1)
+                          : (t.type.index == 1
+                              ? Colors.red.withOpacity(0.1)
+                              : Colors.blue.withOpacity(0.1)),
                   child: Icon(
                     t.type.index == 0
                         ? Icons.arrow_downward
                         : (t.type.index == 1
-                              ? Icons.arrow_upward
-                              : Icons.swap_horiz),
-                    color: t.type.index == 0
-                        ? Colors.green
-                        : (t.type.index == 1 ? Colors.red : Colors.blue),
+                            ? Icons.arrow_upward
+                            : Icons.swap_horiz),
+                    color:
+                        t.type.index == 0
+                            ? Colors.green
+                            : (t.type.index == 1 ? Colors.red : Colors.blue),
                   ),
                 ),
                 title: Text(
@@ -438,12 +451,13 @@ class DashboardView extends StatelessWidget {
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
                 trailing: Text(
-                  '\$${t.amount.toStringAsFixed(2)}',
+                  '$currency${t.amount.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: t.type.index == 0
-                        ? Colors.green
-                        : (t.type.index == 1 ? Colors.red : Colors.blue),
+                    color:
+                        t.type.index == 0
+                            ? Colors.green
+                            : (t.type.index == 1 ? Colors.red : Colors.blue),
                   ),
                 ),
               );

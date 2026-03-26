@@ -1,5 +1,4 @@
 import 'package:home_widget/home_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:push_wallet/features/category/data/category_data.dart';
@@ -14,24 +13,23 @@ const String kWidgetCategoryKey = 'widget_category';
 Future<void> interactiveCallback(Uri? uri) async {
   if (uri == null) return;
 
-  // Initialize SharedPreferences
-  final prefs = await SharedPreferences.getInstance();
-
   // Handle Keypad Input
   if (uri.scheme == 'quickadd') {
     if (uri.host == 'num') {
       final value = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
-      await _handleNumInput(value, prefs);
+      await _handleNumInput(value);
     } else if (uri.host == 'clear') {
-      await _handleClear(prefs);
+      await _handleClear();
     } else if (uri.host == 'save') {
-      await _handleSave(prefs);
+      await _handleSave();
     }
   }
 }
 
-Future<void> _handleNumInput(String num, SharedPreferences prefs) async {
-  String current = prefs.getString(kWidgetAmountKey) ?? '0';
+Future<void> _handleNumInput(String num) async {
+  String current =
+      await HomeWidget.getWidgetData(kWidgetAmountKey, defaultValue: '0') ??
+      '0';
 
   if (num == '.') {
     if (!current.contains('.')) {
@@ -45,7 +43,6 @@ Future<void> _handleNumInput(String num, SharedPreferences prefs) async {
     }
   }
 
-  await prefs.setString(kWidgetAmountKey, current);
   await HomeWidget.saveWidgetData(kWidgetAmountKey, current);
   await HomeWidget.updateWidget(
     name: 'QuickAddWidget',
@@ -53,8 +50,7 @@ Future<void> _handleNumInput(String num, SharedPreferences prefs) async {
   );
 }
 
-Future<void> _handleClear(SharedPreferences prefs) async {
-  await prefs.setString(kWidgetAmountKey, '0');
+Future<void> _handleClear() async {
   await HomeWidget.saveWidgetData(kWidgetAmountKey, '0');
   await HomeWidget.updateWidget(
     name: 'QuickAddWidget',
@@ -62,8 +58,10 @@ Future<void> _handleClear(SharedPreferences prefs) async {
   );
 }
 
-Future<void> _handleSave(SharedPreferences prefs) async {
-  final amountStr = prefs.getString(kWidgetAmountKey) ?? '0';
+Future<void> _handleSave() async {
+  final amountStr =
+      await HomeWidget.getWidgetData(kWidgetAmountKey, defaultValue: '0') ??
+      '0';
   final amount = double.tryParse(amountStr) ?? 0.0;
 
   if (amount <= 0) return;
@@ -122,5 +120,5 @@ Future<void> _handleSave(SharedPreferences prefs) async {
   }
 
   // Clear Widget State
-  await _handleClear(prefs);
+  await _handleClear();
 }

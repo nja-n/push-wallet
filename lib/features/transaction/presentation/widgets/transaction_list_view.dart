@@ -7,6 +7,7 @@ import 'package:push_wallet/features/transaction/presentation/bloc/transaction_c
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'add_transaction_sheet.dart';
+import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 
 class TransactionListView extends StatelessWidget {
   final List<TransactionEntity> transactions;
@@ -25,61 +26,75 @@ class TransactionListView extends StatelessWidget {
     final sortedDates = groupedTransactions.keys.toList()
       ..sort((a, b) => b.compareTo(a));
 
-    return ListView.builder(
-      itemCount: sortedDates.length,
-      itemBuilder: (context, index) {
-        final date = sortedDates[index];
-        final dayTransactions = groupedTransactions[date]!;
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
+        final currency =
+            (settingsState is SettingsLoaded)
+                ? settingsState.currencySymbol
+                : '\$';
 
-        // Calculate daily total
-        double dailyIncome = 0;
-        double dailyExpense = 0;
+        return ListView.builder(
+          itemCount: sortedDates.length,
+          itemBuilder: (context, index) {
+            final date = sortedDates[index];
+            final dayTransactions = groupedTransactions[date]!;
 
-        for (var t in dayTransactions) {
-          if (t.type == TransactionType.income) {
-            dailyIncome += t.amount;
-          } else if (t.type == TransactionType.expense) {
-            dailyExpense += t.amount;
-          }
-        }
+            // Calculate daily total
+            double dailyIncome = 0;
+            double dailyExpense = 0;
 
-        final netAmount = dailyIncome - dailyExpense;
+            for (var t in dayTransactions) {
+              if (t.type == TransactionType.income) {
+                dailyIncome += t.amount;
+              } else if (t.type == TransactionType.expense) {
+                dailyExpense += t.amount;
+              }
+            }
 
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: ExpansionTile(
-            initiallyExpanded: index == 0,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  DateFormat.yMMMd().format(date),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+            final netAmount = dailyIncome - dailyExpense;
+
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: ExpansionTile(
+                initiallyExpanded: index == 0,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      DateFormat.yMMMd().format(date),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      netAmount >= 0
+                          ? '+$currency${netAmount.toStringAsFixed(2)}'
+                          : '-$currency${netAmount.abs().toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: netAmount >= 0 ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  netAmount >= 0
-                      ? '+${netAmount.toStringAsFixed(2)}'
-                      : netAmount.toStringAsFixed(2),
-                  style: TextStyle(
-                    color: netAmount >= 0 ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
+                subtitle: Text(
+                  'Inc: $currency${dailyIncome.toStringAsFixed(2)}  Exp: $currency${dailyExpense.toStringAsFixed(2)}',
                 ),
-              ],
-            ),
-            subtitle: Text(
-              'Inc: ${dailyIncome.toStringAsFixed(2)}  Exp: ${dailyExpense.toStringAsFixed(2)}',
-            ),
-            children: dayTransactions.map((t) {
-              return _buildTransactionTile(context, t);
-            }).toList(),
-          ),
+                children:
+                    dayTransactions.map((t) {
+                      return _buildTransactionTile(context, t, currency);
+                    }).toList(),
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildTransactionTile(BuildContext context, TransactionEntity t) {
+  Widget _buildTransactionTile(
+    BuildContext context,
+    TransactionEntity t,
+    String currency,
+  ) {
     // Lookup details
     final categoryState = context.read<CategoryCubit>().state;
     final accountState = context.read<AccountCubit>().state;
@@ -165,10 +180,10 @@ class TransactionListView extends StatelessWidget {
         },
         leading: CircleAvatar(
           backgroundColor: t.type == TransactionType.income
-              ? Colors.green.withOpacity(0.2)
+              ? Colors.green.withValues(alpha: 0.1)
               : t.type == TransactionType.expense
-              ? Colors.red.withOpacity(0.2)
-              : Colors.blue.withOpacity(0.2),
+              ? Colors.red.withValues(alpha: 0.1)
+              : Colors.blue.withValues(alpha: 0.2),
           child: Icon(
             t.type == TransactionType.income
                 ? Icons.arrow_downward
@@ -201,13 +216,14 @@ class TransactionListView extends StatelessWidget {
           ],
         ),
         trailing: Text(
-          t.amount.toStringAsFixed(2),
+          '$currency${t.amount.toStringAsFixed(2)}',
           style: TextStyle(
-            color: t.type == TransactionType.income
-                ? Colors.green
-                : t.type == TransactionType.expense
-                ? Colors.red
-                : Colors.black,
+            color:
+                t.type == TransactionType.income
+                    ? Colors.green
+                    : t.type == TransactionType.expense
+                    ? Colors.red
+                    : Colors.black,
             fontWeight: FontWeight.bold,
             fontSize: 15,
           ),

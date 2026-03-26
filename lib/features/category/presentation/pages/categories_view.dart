@@ -3,9 +3,33 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:push_wallet/features/category/presentation/bloc/category_cubit.dart';
 import 'package:push_wallet/features/category/domain/entities/category_entity.dart';
 import 'package:push_wallet/features/category/presentation/widgets/save_category_sheet.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-class CategoriesView extends StatelessWidget {
+class CategoriesView extends StatefulWidget {
   const CategoriesView({super.key});
+
+  @override
+  State<CategoriesView> createState() => _CategoriesViewState();
+}
+
+class _CategoriesViewState extends State<CategoriesView> {
+  final GlobalKey _addCategoryKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showTutorial());
+  }
+
+  void _showTutorial() async {
+    final box = await Hive.openBox('settings');
+    bool shown = box.get('tutorial_categories', defaultValue: false);
+    if (!shown && mounted) {
+      ShowCaseWidget.of(context).startShowCase([_addCategoryKey]);
+      box.put('tutorial_categories', true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +45,14 @@ class CategoriesView extends StatelessWidget {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showAddCategoryDialog(context),
-          child: const Icon(Icons.add),
+        floatingActionButton: Showcase(
+          key: _addCategoryKey,
+          title: 'Create Category',
+          description: 'Organize your finances by adding custom categories.',
+          child: FloatingActionButton(
+            onPressed: () => _showAddCategoryDialog(context),
+            child: const Icon(Icons.add),
+          ),
         ),
         body: BlocBuilder<CategoryCubit, CategoryState>(
           builder: (context, state) {

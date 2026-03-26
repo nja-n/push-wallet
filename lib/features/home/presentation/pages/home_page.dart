@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:push_wallet/features/account/presentation/pages/accounts_view.dart';
 import 'package:push_wallet/features/category/presentation/pages/categories_view.dart';
 import 'package:push_wallet/features/transaction/presentation/pages/transactions_view.dart';
 import 'package:push_wallet/features/transaction/presentation/widgets/add_transaction_sheet.dart';
 import 'dashboard_view.dart'; // Same folder
 import 'package:home_widget/home_widget.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,13 +26,33 @@ class _HomePageState extends State<HomePage> {
     const CategoriesView(),
   ];
 
+  final GlobalKey _addTransactionKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
+    // Check for widget interaction
     _checkForWidgetLaunch();
+
+    // Trigger tutorial
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showTutorial();
+    });
+  }
+
+  void _showTutorial() async {
+    final settingsBox = await Hive.openBox('settings');
+    bool shown = settingsBox.get('tutorial_home', defaultValue: false);
+
+    if (!shown && mounted) {
+      ShowCaseWidget.of(context).startShowCase([_addTransactionKey]);
+      settingsBox.put('tutorial_home', true);
+    }
   }
 
   void _checkForWidgetLaunch() {
+    if (kIsWeb) return;
+
     HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
       if (uri != null && uri.toString() == 'pushwallet://quick_add') {
         _showAddTransaction();
