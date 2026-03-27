@@ -37,22 +37,15 @@ class _SaveCategorySheetState extends State<SaveCategorySheet> {
   ];
 
   final List<String> _icons = [
-    '📁',
-    '🍔',
-    '🛒',
-    '🎮',
-    '🚗',
-    '🏠',
-    '✈️',
-    '💡',
-    '🏥',
-    '🎓',
-    '🎁',
-    '💼',
-    '💵',
-    '💰',
-    '🏋️',
-    '🎬',
+    '📁', '🍔', '🛒', '🎮', '🚗', '🏠', '✈️', '💡', '🏥', '🎓',
+    '🎁', '💼', '💵', '💰', '🏋️', '🎬', '👗', '📱', '🚲', '🍜',
+    '☕', '🚆', '⛽', '🚿', '📶', '🧴', '💄', '💍', '🐕', '🐈',
+    '🪴', '🛠️', '💻', '📺', '📻', '🎸', '🎨', '📚', '🎟️', '⚽',
+    '🎾', '🥋', '⛷️', '🏊', '🚴', '🥾', '🏕️', '⛱️', '🏙️', '🌍',
+    '🏦', '🗳️', '⚖️', '🛡️', '🔑', '🏷️', '📦', '🏮', '🧸', '🧶',
+    '🧵', '🪡', '🧼', '🧹', '🧺', '🧻', '🛀', '🛌', '🧘', '💊',
+    '🩺', '🚑', '🚔', '🚒', '🔔', '📢', '📨', '📤', '📥', '💎',
+    '🔨', '🔧', '🪚', '🪜', '🧯', '🧪', '🔭', '📡', '🔋', '🔌',
   ];
 
   @override
@@ -136,27 +129,37 @@ class _SaveCategorySheetState extends State<SaveCategorySheet> {
               ),
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 50,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
+            Container(
+              height: 120, // Show about 3 rows
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+              ),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 6,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                ),
                 itemCount: _icons.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final icon = _icons[index];
                   return GestureDetector(
                     onTap: () => setState(() => _selectedIcon = icon),
                     child: Container(
-                      width: 40,
-                      height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: _selectedIcon == icon
-                            ? Colors.grey.shade200
+                            ? Color(_selectedColor).withOpacity(0.2)
                             : Colors.transparent,
                         shape: BoxShape.circle,
+                        border: _selectedIcon == icon
+                            ? Border.all(color: Color(_selectedColor), width: 1)
+                            : null,
                       ),
-                      child: Text(icon, style: const TextStyle(fontSize: 24)),
+                      child: Text(icon, style: const TextStyle(fontSize: 20)),
                     ),
                   );
                 },

@@ -154,7 +154,12 @@ class _AccountsViewState extends State<AccountsView> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.grey),
+                                    onPressed: () => context
+                                        .read<AccountCubit>()
+                                        .removeAccount(account.id),
+                                  ),
                                 ],
                               ),
                               onTap:
@@ -162,10 +167,6 @@ class _AccountsViewState extends State<AccountsView> {
                                     context,
                                     account: account,
                                   ),
-                              onLongPress:
-                                  () => context
-                                      .read<AccountCubit>()
-                                      .removeAccount(account.id),
                             ),
                           );
                         },
