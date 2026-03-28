@@ -36,12 +36,13 @@ class _QrHomePageState extends State<QrHomePage> {
 
   Future<void> _handleUpiPayment(String upiUrl) async {
     final uri = Uri.parse(upiUrl);
+    final params = Map<String, String>.from(uri.queryParameters);
     
-    // Extract info for confirmation dialog (Optional but good UX)
-    final params = uri.queryParameters;
     final payee = params['pn'] ?? 'Unknown';
-    final amount = params['am'] ?? '0.00';
+    final initialAmount = params['am'] ?? '';
     final upiId = params['pa'] ?? '';
+
+    final amountController = TextEditingController(text: initialAmount);
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -51,12 +52,18 @@ class _QrHomePageState extends State<QrHomePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Paying to: $payee'),
-            Text('UPI ID: $upiId'),
-            const SizedBox(height: 8),
-            Text(
-              'Amount: ₹$amount',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            Text('Paying to: $payee', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('UPI ID: $upiId', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Amount (₹)',
+                border: OutlineInputBorder(),
+                prefixText: '₹ ',
+              ),
+              autofocus: initialAmount.isEmpty,
             ),
           ],
         ),
@@ -73,9 +80,14 @@ class _QrHomePageState extends State<QrHomePage> {
       ),
     );
 
-    if (confirm == true) {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (confirm == true && amountController.text.isNotEmpty) {
+      // Update params with potentially new amount
+      params['am'] = amountController.text;
+      
+      final finalUri = uri.replace(queryParameters: params);
+      
+      if (await canLaunchUrl(finalUri)) {
+        await launchUrl(finalUri, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
