@@ -6,7 +6,8 @@ import '../../../settings/presentation/bloc/settings_cubit.dart';
 import '../widgets/pin_pad.dart';
 
 class AppLockScreen extends StatefulWidget {
-  const AppLockScreen({super.key});
+  final VoidCallback? onSuccess;
+  const AppLockScreen({super.key, this.onSuccess});
 
   @override
   State<AppLockScreen> createState() => _AppLockScreenState();
@@ -19,23 +20,15 @@ class _AppLockScreenState extends State<AppLockScreen> {
     // Check PIN against SettingsCubit
     final isValid = context.read<SettingsCubit>().verifyPin(pin);
     if (isValid) {
-      // Navigate to Dashboard
-      // We use GoRouter or Navigator based on app structure.
-      // Assuming Navigator for now or checking main.dart for context.
-      // Based on main.dart user provided:
-      // It likely uses standard Navigator or GoRouter.
-      // I'll assume Navigator.pushReplacement for now, but better to check routes.
-      // Actually, if this is the 'home' of the app, we might need to replace the route.
-
-      // Since this is a barrier *before* the main app, we just need to let the user in.
-      // If we are using GoRouter, we might redirect.
-      // If we are using standard Navigator, we pushReplacement to DashboardView.
-
-      // Let's assume we can navigate to '/' or DashboardView.
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
+      if (widget.onSuccess != null) {
+        widget.onSuccess!();
+      } else {
+        // Fallback for root auth if needed
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
     } else {
       setState(() {
         _title = 'Incorrect PIN. Try again.';

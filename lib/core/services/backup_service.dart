@@ -62,7 +62,7 @@ class BackupService {
       await file.writeAsString(jsonString);
 
       // 3. Share File
-      final result = await Share.shareXFiles([XFile(file.path)], text: 'Push Wallet Backup');
+      final result = await Share.shareXFiles([XFile(file.path)], text: 'Vault Manager Backup');
 
       if (result.status == ShareResultStatus.success) {
         // Optional: Update last backup time

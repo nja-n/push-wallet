@@ -15,6 +15,7 @@ import 'package:push_wallet/features/category/presentation/bloc/category_cubit.d
 import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:push_wallet/features/home/presentation/pages/home_page.dart';
+import 'features/qr_scanner/presentation/pages/qr_home_page.dart';
 import 'package:push_wallet/features/security/presentation/pages/app_lock_screen.dart';
 
 void main() async {
@@ -54,23 +55,12 @@ class MyApp extends StatelessWidget {
           create: (_) => di.sl<TransactionCubit>()..loadTransactions(),
         ),
       ],
-      child: BlocBuilder<SettingsCubit, SettingsState>(
-        // Rebuild on settings change
-        builder: (context, state) {
-          return MaterialApp(
-            title: 'Push Wallet',
-            debugShowCheckedModeBanner: false,
-            theme: _buildLightTheme(), // Custom Light Theme
-            themeMode: ThemeMode.light, // Enforce Light Mode
-            home: state is SettingsLoaded
-                ? (state.isSecurityEnabled
-                      ? const AppLockScreen()
-                      : ShowCaseWidget(builder: (context) => const HomePage()))
-                : const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  ),
-          );
-        },
+      child: MaterialApp(
+        title: 'Vault Manager',
+        debugShowCheckedModeBanner: false,
+        theme: _buildLightTheme(),
+        themeMode: ThemeMode.light,
+        home: const QrHomePage(),
       ),
     );
   }

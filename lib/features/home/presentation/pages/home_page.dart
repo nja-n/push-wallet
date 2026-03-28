@@ -115,15 +115,20 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: _currentIndex == 0 || _currentIndex == 2
-          ? FloatingActionButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (ctx) => const AddTransactionSheet(),
-                );
-              },
-              child: const Icon(Icons.add),
+          ? Showcase(
+              key: _addTransactionKey,
+              title: 'Add Transaction',
+              description: 'Tap here to log your income, expenses, or transfers.',
+              child: FloatingActionButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) => const AddTransactionSheet(),
+                  );
+                },
+                child: const Icon(Icons.add),
+              ),
             )
           : null,
     );
