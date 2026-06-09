@@ -16,6 +16,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   static const String lastBackupKey = 'last_backup';
   static const String securityEnabledKey = 'security_enabled';
   static const String securityPinKey = 'security_pin';
+  static const String autoLimitBackupsKey = 'auto_limit_backups';
 
   SettingsCubit({required this.settingsBox, required this.backupService})
     : super(SettingsInitial()) {
@@ -30,6 +31,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       securityEnabledKey,
       defaultValue: false,
     );
+    final autoLimitBackups = settingsBox.get(autoLimitBackupsKey, defaultValue: false);
 
     emit(
       SettingsLoaded(
@@ -37,6 +39,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         autoBackup: autoBackup,
         lastBackup: lastBackup,
         isSecurityEnabled: isSecurityEnabled,
+        autoLimitBackups: autoLimitBackups,
       ),
     );
   }
@@ -55,6 +58,13 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
   }
 
+  Future<void> toggleAutoLimitBackups(bool value) async {
+    await settingsBox.put(autoLimitBackupsKey, value);
+    if (state is SettingsLoaded) {
+      emit((state as SettingsLoaded).copyWith(autoLimitBackups: value));
+    }
+  }
+
   Future<void> createBackup(BuildContext context) async {
     await backupService.createBackup(context);
     final now = DateTime.now().toIso8601String();
@@ -68,6 +78,26 @@ class SettingsCubit extends Cubit<SettingsState> {
     final success = await backupService.restoreBackup();
     if (success) {
       // Reload settings as they might have been overwritten
+      loadSettings();
+    }
+    return success;
+  }
+
+  Future<bool> backupToFirebase() async {
+    final success = await backupService.backupToFirebase();
+    if (success) {
+      final now = DateTime.now().toIso8601String();
+      await settingsBox.put(lastBackupKey, now);
+      if (state is SettingsLoaded) {
+        emit((state as SettingsLoaded).copyWith(lastBackup: now));
+      }
+    }
+    return success;
+  }
+
+  Future<bool> restoreLatestFromFirebase() async {
+    final success = await backupService.restoreLatestFromFirebase();
+    if (success) {
       loadSettings();
     }
     return success;

@@ -17,7 +17,15 @@ import 'features/transaction/data/transaction_data.dart';
 import 'features/transaction/domain/repositories/transaction_repository.dart';
 import 'features/transaction/domain/usecases/add_transaction.dart';
 import 'features/transaction/domain/usecases/delete_transaction.dart';
-import 'features/transaction/domain/usecases/update_transaction.dart';
+import 'package:push_wallet/features/transaction/domain/usecases/update_transaction.dart';
+
+import 'features/todo/data/todo_data.dart';
+import 'features/todo/domain/usecases/todo_usecases.dart';
+import 'features/todo/presentation/bloc/todo_cubit.dart';
+
+import 'features/workout/data/workout_data.dart';
+import 'features/workout/domain/usecases/workout_usecases.dart';
+import 'features/workout/presentation/bloc/workout_cubit.dart';
 
 // Blocs will be added later
 
@@ -99,6 +107,8 @@ Future<void> init() async {
       categoryBox: sl(),
       transactionBox: sl(),
       settingsBox: settingsBox,
+      todoBox: sl(),
+      workoutBox: sl(),
     ),
   );
 
@@ -114,6 +124,46 @@ Future<void> init() async {
     () => TransactionLocalDataSourceImpl(sl()),
   );
 
+  // Features - Todo
+  sl.registerFactory(
+    () => TodoCubit(
+      getTodos: sl(),
+      addTodo: sl(),
+      updateTodo: sl(),
+      deleteTodo: sl(),
+    ),
+  );
+  sl.registerLazySingleton(() => GetTodos(sl()));
+  sl.registerLazySingleton(() => AddTodo(sl()));
+  sl.registerLazySingleton(() => UpdateTodo(sl()));
+  sl.registerLazySingleton(() => DeleteTodo(sl()));
+  sl.registerLazySingleton<TodoRepository>(
+    () => TodoRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton<TodoLocalDataSource>(
+    () => TodoLocalDataSourceImpl(sl()),
+  );
+
+  // Features - Workout
+  sl.registerFactory(
+    () => WorkoutCubit(
+      getWorkouts: sl(),
+      addWorkout: sl(),
+      updateWorkout: sl(),
+      deleteWorkout: sl(),
+    ),
+  );
+  sl.registerLazySingleton(() => GetWorkouts(sl()));
+  sl.registerLazySingleton(() => AddWorkout(sl()));
+  sl.registerLazySingleton(() => UpdateWorkout(sl()));
+  sl.registerLazySingleton(() => DeleteWorkout(sl()));
+  sl.registerLazySingleton<WorkoutRepository>(
+    () => WorkoutRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton<WorkoutLocalDataSource>(
+    () => WorkoutLocalDataSourceImpl(sl()),
+  );
+
   // External
   final accountBox = await Hive.openBox<AccountModel>('accounts');
   sl.registerLazySingleton(() => accountBox);
@@ -123,4 +173,10 @@ Future<void> init() async {
 
   final transactionBox = await Hive.openBox<TransactionModel>('transactions');
   sl.registerLazySingleton(() => transactionBox);
+
+  final todoBox = await Hive.openBox<TodoModel>('todos');
+  sl.registerLazySingleton(() => todoBox);
+
+  final workoutBox = await Hive.openBox<WorkoutModel>('workouts');
+  sl.registerLazySingleton(() => workoutBox);
 }

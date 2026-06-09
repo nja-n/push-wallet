@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:push_wallet/core/services/widget_service.dart';
@@ -15,11 +14,21 @@ import 'package:push_wallet/features/category/presentation/bloc/category_cubit.d
 import 'package:push_wallet/features/transaction/presentation/bloc/transaction_cubit.dart';
 import 'package:push_wallet/features/settings/presentation/bloc/settings_cubit.dart';
 import 'package:push_wallet/features/home/presentation/pages/home_page.dart';
-import 'features/qr_scanner/presentation/pages/qr_home_page.dart';
-import 'package:push_wallet/features/security/presentation/pages/app_lock_screen.dart';
+import 'features/todo/data/todo_data.dart';
+import 'features/todo/presentation/bloc/todo_cubit.dart';
+import 'features/workout/data/workout_data.dart';
+import 'features/workout/presentation/bloc/workout_cubit.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:push_wallet/features/security/presentation/pages/auth_page.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   await Hive.initFlutter();
 
@@ -33,6 +42,8 @@ void main() async {
   Hive.registerAdapter(CategoryModelAdapter());
   Hive.registerAdapter(SubCategoryModelAdapter());
   Hive.registerAdapter(TransactionModelAdapter());
+  Hive.registerAdapter(TodoModelAdapter());
+  Hive.registerAdapter(WorkoutModelAdapter());
 
   await di.init();
 
@@ -54,13 +65,17 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => di.sl<TransactionCubit>()..loadTransactions(),
         ),
+        BlocProvider(create: (_) => di.sl<TodoCubit>()..loadTodos()),
+        BlocProvider(create: (_) => di.sl<WorkoutCubit>()..loadWorkouts()),
       ],
       child: MaterialApp(
-        title: 'Vault Manager',
+        title: 'HOMO',
         debugShowCheckedModeBanner: false,
         theme: _buildLightTheme(),
         themeMode: ThemeMode.light,
-        home: const QrHomePage(),
+        home: FirebaseAuth.instance.currentUser == null
+            ? const AuthPage()
+            : const HomePage(),
       ),
     );
   }

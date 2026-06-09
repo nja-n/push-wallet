@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../home/presentation/pages/home_page.dart';
 import '../../../settings/presentation/bloc/settings_cubit.dart';
 import '../widgets/pin_pad.dart';
+import '../../../home/presentation/pages/finance_home_page.dart';
 
 class AppLockScreen extends StatefulWidget {
   final VoidCallback? onSuccess;
@@ -26,7 +26,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
         // Fallback for root auth if needed
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(builder: (_) => const FinanceHomePage()),
         );
       }
     } else {

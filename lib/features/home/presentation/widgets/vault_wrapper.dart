@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:showcaseview/showcaseview.dart';
 import '../../../settings/presentation/bloc/settings_cubit.dart';
 import '../../../security/presentation/pages/app_lock_screen.dart';
-import '../pages/home_page.dart';
+import '../pages/finance_home_page.dart';
 
 class VaultWrapper extends StatefulWidget {
   const VaultWrapper({super.key});
@@ -39,7 +39,7 @@ class _VaultWrapperState extends State<VaultWrapper> {
           
           // Show the main app
           return ShowCaseWidget(
-            builder: (context) => const HomePage(),
+            builder: (context) => const FinanceHomePage(),
           );
         }
         return const Scaffold(

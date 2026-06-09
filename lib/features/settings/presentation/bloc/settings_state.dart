@@ -13,12 +13,14 @@ class SettingsLoaded extends SettingsState {
   final bool autoBackup;
   final String? lastBackup;
   final bool isSecurityEnabled;
+  final bool autoLimitBackups;
 
   const SettingsLoaded({
     required this.currencySymbol,
     this.autoBackup = false,
     this.lastBackup,
     this.isSecurityEnabled = false,
+    this.autoLimitBackups = false,
   });
 
   SettingsLoaded copyWith({
@@ -26,12 +28,14 @@ class SettingsLoaded extends SettingsState {
     bool? autoBackup,
     String? lastBackup,
     bool? isSecurityEnabled,
+    bool? autoLimitBackups,
   }) {
     return SettingsLoaded(
       currencySymbol: currencySymbol ?? this.currencySymbol,
       autoBackup: autoBackup ?? this.autoBackup,
       lastBackup: lastBackup ?? this.lastBackup,
       isSecurityEnabled: isSecurityEnabled ?? this.isSecurityEnabled,
+      autoLimitBackups: autoLimitBackups ?? this.autoLimitBackups,
     );
   }
 
@@ -41,5 +45,6 @@ class SettingsLoaded extends SettingsState {
     autoBackup,
     lastBackup,
     isSecurityEnabled,
+    autoLimitBackups,
   ];
 }

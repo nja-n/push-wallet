@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../home/presentation/widgets/vault_wrapper.dart';
-import '../../../settings/presentation/bloc/settings_cubit.dart';
 
 class QrHomePage extends StatefulWidget {
   const QrHomePage({super.key});
@@ -108,7 +106,7 @@ class _QrHomePageState extends State<QrHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vault Manager'),
+        title: const Text('HOMO Scanner'),
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,
