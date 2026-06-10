@@ -82,7 +82,10 @@ class _TransactionsViewState extends State<TransactionsView> {
             // Apply Filters
             if (_selectedAccountIds.isNotEmpty) {
               transactions = transactions
-                  .where((t) => _selectedAccountIds.contains(t.accountId))
+                  .where((t) =>
+                      _selectedAccountIds.contains(t.accountId) ||
+                      (t.toAccountId != null &&
+                          _selectedAccountIds.contains(t.toAccountId)))
                   .toList();
             }
             if (_selectedCategoryIds.isNotEmpty) {

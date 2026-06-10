@@ -99,7 +99,7 @@ class _FirebaseSyncDialogState extends State<FirebaseSyncDialog> {
     
     setState(() {
       _syncProgress = 0.5;
-      _syncStep = 'Uploading backup to Firebase...';
+      _syncStep = 'Uploading backup to Cloud...';
     });
 
     final success = await cubit.backupToFirebase();
@@ -175,6 +175,50 @@ class _FirebaseSyncDialogState extends State<FirebaseSyncDialog> {
     });
   }
 
+  Future<void> _deleteBackup(String key) async {
+    if (_currentUser == null) return;
+    final settingsCubit = context.read<SettingsCubit>();
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Delete Backup'),
+        content: const Text('Are you sure you want to delete this backup from the cloud?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isSyncing = true;
+      _syncProgress = 0.5;
+      _syncStep = 'Deleting backup...';
+    });
+
+    final success = await settingsCubit.backupService.deleteCloudBackup(_currentUser.uid, key);
+
+    if (success && mounted) {
+      await _fetchBackupsList();
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isSyncing = false;
+      _syncProgress = 1.0;
+      _syncStep = success ? 'Backup deleted successfully!' : 'Failed to delete backup.';
+    });
+  }
+
   String _getBackupDisplayDate(String key, dynamic val) {
     final settingsCubit = context.read<SettingsCubit>();
     final parsed = settingsCubit.backupService.parseBackupData(val);
@@ -209,7 +253,7 @@ class _FirebaseSyncDialogState extends State<FirebaseSyncDialog> {
       );
     }
 
-    final titleText = widget.isBackupMode ? 'Firebase Backup' : 'Firebase Restore';
+    final titleText = widget.isBackupMode ? 'Backup to Cloud' : 'Restore from Cloud';
     final primaryColor = Theme.of(context).primaryColor;
 
     return AlertDialog(
@@ -431,13 +475,28 @@ class _FirebaseSyncDialogState extends State<FirebaseSyncDialog> {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            trailing: ElevatedButton(
-                              onPressed: isValid ? () => _runSpecificRestore(item.value) : null,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                minimumSize: const Size(60, 30),
-                              ),
-                              child: const Text('Restore', style: TextStyle(fontSize: 12)),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: isValid ? () => _runSpecificRestore(item.value) : null,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    minimumSize: const Size(60, 30),
+                                  ),
+                                  child: const Text('Restore', style: TextStyle(fontSize: 12)),
+                                ),
+                                if (index > 0) ...[
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                    onPressed: () => _deleteBackup(item.key),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    tooltip: 'Delete this backup',
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         );

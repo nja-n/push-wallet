@@ -60,9 +60,28 @@ class TransactionListView extends StatelessWidget {
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      DateFormat.yMMMd().format(date),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          DateFormat.yMMMd().format(date),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue),
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (ctx) => AddTransactionSheet(initialDate: date),
+                            );
+                          },
+                          tooltip: 'Add Transaction for this date',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
                     ),
                     Text(
                       netAmount >= 0
@@ -120,12 +139,21 @@ class TransactionListView extends StatelessWidget {
       }
     }
 
+    String toAccountName = 'Unknown Account';
     if (accountState is AccountLoaded) {
       final account = accountState.accounts.firstWhereOrNull(
         (a) => a.id == t.accountId,
       );
       if (account != null) {
         accountName = account.name;
+      }
+      if (t.toAccountId != null) {
+        final toAccount = accountState.accounts.firstWhereOrNull(
+          (a) => a.id == t.toAccountId,
+        );
+        if (toAccount != null) {
+          toAccountName = toAccount.name;
+        }
       }
     }
 
@@ -206,7 +234,9 @@ class TransactionListView extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              '$categoryName$subCategoryName • $accountName',
+              t.type == TransactionType.transfer
+                  ? '$accountName ➔ $toAccountName'
+                  : '$categoryName$subCategoryName • $accountName',
               style: const TextStyle(fontSize: 12),
             ),
             Text(

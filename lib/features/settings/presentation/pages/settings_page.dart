@@ -247,7 +247,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               title: Text(FirebaseAuth.instance.currentUser?.email ?? 'Guest User'),
               subtitle: Text(FirebaseAuth.instance.currentUser != null
-                  ? 'Authenticated via Firebase'
+                  ? 'Authenticated via Cloud'
                   : 'Log in to sync data to the cloud'),
               trailing: FirebaseAuth.instance.currentUser != null
                   ? TextButton(
@@ -432,7 +432,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       subtitle: Text(
                         isAuth
-                            ? 'Automatically sync database changes to Firebase'
+                            ? 'Automatically sync database changes to Cloud'
                             : 'Log in required to enable auto backup',
                         style: TextStyle(
                           color: isAuth ? null : Colors.grey[500],
@@ -471,7 +471,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       ),
                       title: Text(
-                        'Backup to Firebase Cloud',
+                        'Backup to Cloud',
                         style: TextStyle(
                           color: isAuth ? null : Colors.grey,
                         ),
@@ -506,7 +506,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                       ),
                       title: Text(
-                        'Restore from Firebase Cloud',
+                        'Restore from Cloud',
                         style: TextStyle(
                           color: isAuth ? null : Colors.grey,
                         ),

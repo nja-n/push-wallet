@@ -165,6 +165,7 @@ class _AuthPageState extends State<AuthPage> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       labelText: 'Email Address',
                       prefixIcon: Icon(Icons.email_outlined),
@@ -185,6 +186,8 @@ class _AuthPageState extends State<AuthPage> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
                     decoration: const InputDecoration(
                       labelText: 'Password',
                       prefixIcon: Icon(Icons.lock_outline),

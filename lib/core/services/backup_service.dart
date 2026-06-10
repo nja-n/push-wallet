@@ -395,6 +395,18 @@ class BackupService {
     }
   }
 
+  Future<bool> deleteCloudBackup(String userId, String backupKey) async {
+    try {
+      final ref = FirebaseDatabase.instance.ref('backups/$userId/$backupKey');
+      await ref.remove();
+      debugPrint('Successfully deleted backup with key: $backupKey');
+      return true;
+    } catch (e) {
+      debugPrint('Error deleting cloud backup: $e');
+      return false;
+    }
+  }
+
   Future<void> clearAllLocalData() async {
     _isRestoring = true;
     try {

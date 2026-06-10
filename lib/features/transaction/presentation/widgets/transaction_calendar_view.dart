@@ -133,7 +133,24 @@ class _TransactionCalendarViewState extends State<TransactionCalendarView> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text(DateFormat.yMMMd().format(date)),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(DateFormat.yMMMd().format(date)),
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+                onPressed: () {
+                  Navigator.pop(ctx); // Close dialog
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) => AddTransactionSheet(initialDate: date),
+                  );
+                },
+                tooltip: 'Add Transaction',
+              ),
+            ],
+          ),
           content: SizedBox(
             width: double.maxFinite,
             child: dayTransactions.isEmpty
@@ -190,12 +207,21 @@ class _TransactionCalendarViewState extends State<TransactionCalendarView> {
       }
     }
 
+    String toAccountName = 'Unknown Account';
     if (accountState is AccountLoaded) {
       final account = accountState.accounts.firstWhereOrNull(
         (a) => a.id == t.accountId,
       );
       if (account != null) {
         accountName = account.name;
+      }
+      if (t.toAccountId != null) {
+        final toAccount = accountState.accounts.firstWhereOrNull(
+          (a) => a.id == t.toAccountId,
+        );
+        if (toAccount != null) {
+          toAccountName = toAccount.name;
+        }
       }
     }
 
@@ -285,7 +311,9 @@ class _TransactionCalendarViewState extends State<TransactionCalendarView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '$categoryName$subCategoryName • $accountName',
+              t.type == TransactionType.transfer
+                  ? '$accountName ➔ $toAccountName'
+                  : '$categoryName$subCategoryName • $accountName',
               style: const TextStyle(fontSize: 12),
             ),
             Text(
