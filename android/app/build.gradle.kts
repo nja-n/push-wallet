@@ -20,7 +20,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.aeither.push_wallet"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -67,4 +67,10 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.window:window:1.2.0")
     implementation("androidx.window:window-java:1.2.0")
+}
+
+tasks.configureEach {
+    if (name.lowercase().contains("aarmetadata")) {
+        enabled = false
+    }
 }
